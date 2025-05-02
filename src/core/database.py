@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import URL
+from sqlalchemy.orm import DeclarativeBase
 
-from settings import postgres_settings
+from core.settings import postgres_settings
 
 
 postgres_dcn = URL.create(
@@ -14,3 +15,7 @@ postgres_dcn = URL.create(
 ).render_as_string(hide_password=False)
 
 async_engine = create_async_engine(postgres_dcn, echo=True)
+
+
+class Base(DeclarativeBase):
+    pass
