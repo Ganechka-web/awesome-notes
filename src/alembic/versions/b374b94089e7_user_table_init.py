@@ -28,7 +28,7 @@ def upgrade() -> None:
         sa.Column("username", sa.String(length=50), nullable=False),
         sa.Column(
             "gender",
-            sa.Enum("MALE", "FEMALE", "UNKNOWN", name="gender"),
+            sa.Enum("male", "female", "unknown", name="gender"),
             nullable=False,
         ),
         sa.Column("age", sa.Integer(), nullable=False),

@@ -11,9 +11,9 @@ SQL_TIMEZONE_NOW = text("TIMEZONE('utc', now())")
 
 
 class Gender(Enum):
-    MALE = 'male'
-    FEMALE = 'female'
-    UNKNOWN = 'unknown'
+    male = 'male'
+    female = 'female'
+    unknown = 'unknown'
 
 
 class User(Base):
@@ -23,7 +23,7 @@ class User(Base):
                                     autoincrement=True)
     username: Mapped[str] = mapped_column(String(50),
                                           unique=True)
-    gender: Mapped[Gender] = mapped_column(default=Gender.UNKNOWN)
+    gender: Mapped[Gender] = mapped_column(default=Gender.unknown)
     age: Mapped[int]
 
     joined_at: Mapped[datetime] = mapped_column(
