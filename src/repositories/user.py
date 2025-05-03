@@ -34,6 +34,10 @@ class UserRepository:
     async def create_one(self, user: User) -> int:
         async with AsyncSession(self.engine) as session:
             session.add(user)
+            await session.flush()
+
+            new_user_id = user.id
+
             await session.commit()
             
-            return user.id
+            return new_user_id
