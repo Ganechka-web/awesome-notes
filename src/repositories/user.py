@@ -41,3 +41,13 @@ class UserRepository:
             await session.commit()
             
             return new_user_id
+        
+    async def update_one(self, user: User) -> None:
+        async with AsyncSession(self.engine) as session:
+            session.add(user)
+            await session.commit()
+    
+    async def delete_one(self, user: User) -> None:
+        async with AsyncSession(self.engine) as session:
+            await session.delete(user)
+            await session.commit()
