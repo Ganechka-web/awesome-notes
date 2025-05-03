@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -13,7 +14,9 @@ class UserCreateShema(BaseModel):
 
 
 class UserUpgrateShema(UserCreateShema):
-    pass
+    username: Optional[str] = Field(default=None, max_length=50)
+    gender: Optional[str] = None
+    age: Optional[int] = None
 
 
 class UserOutputShema(UserCreateShema):
