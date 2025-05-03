@@ -20,13 +20,13 @@ class UserService:
     async def get_one_by_id(self, id: int) -> UserOutputShema | None:
         user = await self.repository.get_one_by_id(id=id)
 
-        return UserCreateShema.model_validate(user)
+        return UserOutputShema.model_validate(user)
     
     async def get_one_by_username(self, 
                                   username: str) -> UserOutputShema | None:
         user = await self.repository.get_one_by_username(username=username)
 
-        return UserCreateShema.model_validate(user)
+        return UserOutputShema.model_validate(user)
 
     async def create_one(self, new_user: UserCreateShema) -> int:
         new_user_orm = User(**new_user.__dict__)
