@@ -25,6 +25,19 @@ async def get_all() -> list[UserOutputShema]:
     return users
 
 
+@users_router.get('/by-id/{user_id}')
+async def get_one_by_id(user_id: Annotated[int, Path()]) -> UserOutputShema:
+    user = await user_service.get_one_by_id(id=user_id)
+
+    return user
+
+
+@users_router.get('/by-username/{username}')
+async def get_one_by_username(username: Annotated[str, Path()]) -> UserOutputShema:
+    user = await user_service.get_one_by_username(username=username)
+
+    return user
+
 @users_router.post('/create/')
 async def create_one(new_user: UserCreateShema):
     new_user_id = await user_service.create_one(new_user=new_user)
