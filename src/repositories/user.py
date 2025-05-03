@@ -19,14 +19,14 @@ class UserRepository:
 
     async def get_one_by_id(self, id: int) -> User:
         async with AsyncSession(self.engine) as session:
-            query = select(User).where(id == id)
+            query = select(User).where(self.model.id == id)
             user = await session.execute(query)
 
             return user.scalar_one_or_none()
 
     async def get_one_by_username(self, username: str) -> User:
         async with AsyncSession(self.engine) as session:
-            query = select(self.model).where(username == username)
+            query = select(self.model).where(self.model.username == username)
             user = await session.execute(query)
 
             return user.scalar_one_or_none()      
