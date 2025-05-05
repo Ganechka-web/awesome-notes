@@ -9,6 +9,9 @@ class NoteCreateShema(BaseModel):
     content: str
     owner_id: int
 
+    class Config:
+        from_attributes = True
+
 
 class NoteUpdateShema(NoteCreateShema):
     title: Optional[str]
