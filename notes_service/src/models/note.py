@@ -22,5 +22,4 @@ class Note(Base):
         server_default=SQL_TIMEZONE_NOW
     )
     # This field is for relation with users table 
-    owner_id: Mapped[int]
-    
+    owner_id: Mapped[int] = mapped_column(index=True)
