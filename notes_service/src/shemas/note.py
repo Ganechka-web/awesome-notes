@@ -14,8 +14,9 @@ class NoteCreateShema(BaseModel):
 
 
 class NoteUpdateShema(NoteCreateShema):
-    title: Optional[str]
-    content: Optional[str]
+    title: Optional[str] = None
+    content: Optional[str] = None
+    owner_id: Optional[int] = None
 
 
 class NoteOutputShema(NoteCreateShema):
