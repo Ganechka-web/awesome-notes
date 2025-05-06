@@ -53,3 +53,21 @@ class NoteRepository:
                 ) from e
 
             return new_note_id    
+
+    async def update_one(self, note: Note) -> None:
+        async with AsyncSession(self.engine) as session:
+            session.add(note)
+
+            try: 
+                await session.commit()
+            except IntegrityError as e:
+                await session.rollback()
+                raise DatabaseError(
+                    'Error during saving row'
+                ) from e
+    
+    async def delete_one(self, note: Note) -> None:
+        async with AsyncSession(self.engine) as session:
+            await session.delete(note)
+            await session.commit()
+    
