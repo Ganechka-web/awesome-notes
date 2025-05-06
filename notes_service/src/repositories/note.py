@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from models.note import Note
 from exceptions.repository import DatabaseError, NoSuchRowError
+from repositories.specifications import Specification
 
 
 class NoteRepository:
@@ -18,13 +19,13 @@ class NoteRepository:
             notes = await session.scalars(query)
 
             return notes.all()
-
-    async def get_all_by_owner_id(self, owner_id: int) -> list[Note]:
+        
+    async def filter_by(self, specification: Specification) -> list[Note]: 
         async with AsyncSession(self.engine) as session:
-            query = select(self.model).where(self.model.owner_id == owner_id)
-            notes_by_owner_id = await session.scalars(query)
+            query = select(self.model).where(*specification.is_satisfied())
+            filtered_notes = await session.scalars(query)
 
-            return notes_by_owner_id.all()
+            return filtered_notes.all()
     
     async def get_one_by_id(self, note_id: int) -> Note:
         async with AsyncSession(self.engine) as session:
