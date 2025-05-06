@@ -51,8 +51,8 @@ async def create_one(new_note: NoteCreateShema) -> int:
     except NoteAlreadyExistsError: 
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail=f'Note with title - {new_note.title} already exists'
+            detail=f'User already has got a'
+                   f'note with title - {new_note.title}'
         )
     
     return new_note_id
-
