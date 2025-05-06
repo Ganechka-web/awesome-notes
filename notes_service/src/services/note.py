@@ -1,15 +1,19 @@
 from repositories.note import NoteRepository
+from repositories.specifications import NotesForOwnerSpecification
+from models.note import Note
 from shemas.note import ( 
     NoteOutputShema, 
     NoteCreateShema
 )
-from models.note import Note
-from exceptions.repository import DatabaseError, NoSuchRowError
-from exceptions.service import NoteNotFoundError, NoteAlreadyExistsError
-
+from services.validators import NoteTitleUniqueForOwnerValidator
+from exceptions.repository import NoSuchRowError
+from exceptions.service import NoteNotFoundError
+    
 
 class NoteService:
     def __init__(self, repository: NoteRepository):
+        self.notes_for_owner_spec = NotesForOwnerSpecification
+        self.note_title_unique_for_owner_validator = NoteTitleUniqueForOwnerValidator
         self.repository = repository
 
     async def get_all(self) -> list[NoteOutputShema]:
@@ -18,8 +22,9 @@ class NoteService:
         return [NoteOutputShema.model_validate(note) for note in notes]
 
     async def get_all_by_owner_id(self, owner_id: int) -> list[NoteOutputShema]:
+        specification = self.notes_for_owner_spec(owner_id=owner_id)
         notes_by_owner_id = (
-            await self.repository.get_all_by_owner_id(owner_id=owner_id)
+            await self.repository.filter_by(specification=specification)
         )
 
         return [NoteOutputShema.model_validate(note) 
@@ -37,11 +42,13 @@ class NoteService:
     
     async def create_one(self, new_note: NoteCreateShema) -> int:
         new_note_orm = Note(**new_note.model_dump())
-        try:
-            new_note_id = await self.repository.create_one(note=new_note_orm)
-        except DatabaseError as e:
-            raise NoteAlreadyExistsError(
-                f'Note with title - {new_note.title} already exists'
-            ) from e
+
+        note_title_unique_for_owner_validator = self.note_title_unique_for_owner_validator(
+            repository=self.repository, 
+            owner_id=Note.owner_id
+        )
+        await note_title_unique_for_owner_validator.validate(new_note_title=new_note.title)
+
+        new_note_id = await self.repository.create_one(note=new_note_orm)
 
         return new_note_id
