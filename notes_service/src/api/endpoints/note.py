@@ -20,8 +20,8 @@ note_service = NoteService(note_repository)
 
 
 @notes_router.get("/")
-async def get_all() -> list[NoteOutputShema]:
-    notes = await note_service.get_all()
+async def get_all(md_content_format: bool = False) -> list[NoteOutputShema]:
+    notes = await note_service.get_all(md_content_format=md_content_format)
 
     return notes
 
@@ -29,16 +29,24 @@ async def get_all() -> list[NoteOutputShema]:
 @notes_router.get("/by-owner-id/{owner_id}")
 async def get_all_by_owner_id(
     owner_id: Annotated[int, Path()],
+    md_content_format: bool = False
 ) -> list[NoteOutputShema]:
-    notes_by_owner_id = await note_service.get_all_by_owner_id(owner_id=owner_id)
+    notes_by_owner_id = await note_service.get_all_by_owner_id(
+        owner_id=owner_id, md_content_format=md_content_format
+    )
 
     return notes_by_owner_id
 
 
 @notes_router.get('/by-id/{note_id}')
-async def get_one_by_id(note_id: Annotated[int, Path()]) -> NoteOutputShema:
+async def get_one_by_id(
+    note_id: Annotated[int, Path()],
+    md_content_format: bool = False
+) -> NoteOutputShema:
     try:
-        note = await note_service.get_one_by_id(note_id=note_id)
+        note = await note_service.get_one_by_id(
+            note_id=note_id, md_content_format=md_content_format
+        )
     except NoteNotFoundError:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
