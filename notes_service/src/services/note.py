@@ -86,3 +86,12 @@ class NoteService:
             ) from e
 
         await self.repository.delete_one(note=note_on_delete)
+
+    async def delete_all_by_owner_id(self, owner_id: int) -> None:
+        specification = self.notes_for_owner_spec(owner_id=owner_id)
+        notes_by_owner_id = (
+            await self.repository.filter_by(specification=specification)
+        ) 
+        note_ids = [note.id for note in notes_by_owner_id]
+
+        await self.repository.delete_all(note_ids=note_ids)
