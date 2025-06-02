@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.exc import NoResultFound, IntegrityError
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from models.note import Note
 from exceptions.repository import DatabaseError, NoSuchRowError
@@ -71,3 +71,8 @@ class NoteRepository:
             await session.delete(note)
             await session.commit()
     
+    async def delete_all(self, note_ids: list[int]) -> None:
+        async with AsyncSession(self.engine) as session:
+            query = delete(self.model).where(self.model.id.in_(note_ids))
+            await session.execute(query)
+            await session.commit()
