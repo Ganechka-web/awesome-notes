@@ -16,3 +16,15 @@ class PostgresSettings:
 
 
 postgres_settings = PostgresSettings()
+
+
+class RabbitMQSettings:
+    host: str = os.getenv('RABBITMQ_HOST', '127.0.0.1')
+    port: int = int(os.getenv('RABBITMQ_PORT', 5672))
+    user: str = os.getenv('RABBITMG_USER')
+    password: str = os.getenv('RABBITMQ_PASSWORD')
+
+
+DELETE_NOTES_QUEUE_NAME = 'delete_notes_queue'
+rabbitmq_settings = RabbitMQSettings()
+
