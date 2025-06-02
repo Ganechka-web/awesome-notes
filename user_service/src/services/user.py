@@ -1,3 +1,5 @@
+import json
+
 from shemas.user import (
     UserOutputShema,
     UserCreateShema,
@@ -10,6 +12,8 @@ from exceptions.services import (
     UserNotFoundError, 
     UserAlreadyExistsError
 )
+from broker.connection import get_connection_to_broker
+from broker.publishers import NotePublisher
 
 
 class UserService:
@@ -80,4 +84,15 @@ class UserService:
             raise UserNotFoundError(
                 f'Unable to find user with id - {user_id}'
             ) from e
+        
+        # create and publish message for deleting all user`s notes
+        async with NotePublisher(
+            connection=await get_connection_to_broker()
+        ) as notes_publisher:    
+            data = bytes(
+                json.dumps({'user_id': user_id}),
+                encoding='utf-8'
+            )
+            await notes_publisher.publish(data=data)
+
         await self.repository.delete_one(user=user_on_delete) 
