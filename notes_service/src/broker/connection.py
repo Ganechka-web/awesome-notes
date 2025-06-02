@@ -30,6 +30,6 @@ async def connect_to_broker() -> None:
 
 
 async def close_connection_to_broker() -> None:
+    global connection
     if not connection.is_closed:
-        global connection
         await connection.close()
