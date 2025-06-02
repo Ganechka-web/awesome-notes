@@ -102,7 +102,7 @@ async def delete_one(note_id: Annotated[int, Path()]):
         )
 
 
-@notes_router.delete('delete/by-owner-id/{owner_id}')
+@notes_router.delete('/delete/by-owner-id/{owner_id}')
 async def delete_all_by_owner_id(
     owner_id: Annotated[int, Path()]
 ) -> None:
