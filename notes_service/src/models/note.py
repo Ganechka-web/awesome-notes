@@ -14,6 +14,7 @@ class Note(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
+    # content field contains note`s in MarkDown format
     content: Mapped[str] = mapped_column(Text) 
     created_at: Mapped[datetime] = mapped_column(
         server_default=SQL_TIMEZONE_NOW
