@@ -5,6 +5,7 @@ from aio_pika.abc import AbstractConnection, AbstractChannel
 
 from core.settings import DELETE_NOTES_QUEUE_NAME
 from broker.connection import close_connection_to_broker
+from logger import logger
 
 
 class NotePublisher:
@@ -17,15 +18,18 @@ class NotePublisher:
         self.channel: AbstractChannel = None
 
     async def __aenter__(self) -> Self:
+        logger.info("Publisher has opened connection")
         return self
     
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         if exc_type:
-            # TO DO: implement logging
-            print('During message publishing raises an exeption ' 
-                  f'type - {exc_type}, value - {exc_value} '
-                  f'traceback - {traceback}')
-        await close_connection_to_broker()
+            logger.warning(
+                "Publisher has raised an exception during running: "
+                f"type - {exc_type}, value - {exc_value}, "
+                f"traceback - {traceback}"
+            )
+        await close_connection_to_broker(self.connection)
+        logger.info("Publisher`s connection has closed")
 
     async def _get_channel(self) -> AbstractChannel:
         if not self.channel or self.channel.is_closed:
@@ -34,6 +38,7 @@ class NotePublisher:
                 DELETE_NOTES_QUEUE_NAME, 
                 durable=True
             )
+        logger.info("Publisher has connected to queue")
         return self.channel
     
     async def publish(self, data: bytes) -> None:
@@ -42,3 +47,4 @@ class NotePublisher:
             message=Message(data),
             routing_key=DELETE_NOTES_QUEUE_NAME
         )
+        logger.info("Publish message on delete user`s notes")
