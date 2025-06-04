@@ -12,8 +12,9 @@ from exceptions.services import (
     UserNotFoundError, 
     UserAlreadyExistsError
 )
-from broker.connection import get_connection_to_broker
 from broker.publishers import NotePublisher
+from exceptions.broker import PublisherCantConnectToBrokerError
+from logger import logger
 
 
 class UserService:
@@ -86,13 +87,15 @@ class UserService:
             ) from e
         
         # create and publish message for deleting all user`s notes
-        async with NotePublisher(
-            connection=await get_connection_to_broker()
-        ) as notes_publisher:    
-            data = bytes(
-                json.dumps({'user_id': user_id}),
-                encoding='utf-8'
-            )
-            await notes_publisher.publish(data=data)
+        try:
+            async with NotePublisher() as notes_publisher:    
+                data = bytes(
+                    json.dumps({'user_id': user_id}),
+                    encoding='utf-8'
+                )
+                await notes_publisher.publish(data=data)
+        except PublisherCantConnectToBrokerError:
+            logger.warning("Unable to send message, publisher unavailable")
+            raise 
 
         await self.repository.delete_one(user=user_on_delete) 
