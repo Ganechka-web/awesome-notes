@@ -12,6 +12,7 @@ from exceptions.services import (
     UserNotFoundError,
     UserAlreadyExistsError
 )
+from exceptions.broker import PublisherCantConnectToBrokerError
 from shemas.user import (
     UserOutputShema, 
     UserCreateShema,
@@ -96,5 +97,10 @@ async def delete_one(user_id: Annotated[int, Path()]):
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             detail='User not found'
+        )
+    except PublisherCantConnectToBrokerError:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail='Unable to delete user, please try again later'
         )
     
