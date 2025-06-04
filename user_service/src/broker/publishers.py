@@ -4,20 +4,30 @@ from aio_pika import Message
 from aio_pika.abc import AbstractConnection, AbstractChannel
 
 from core.settings import DELETE_NOTES_QUEUE_NAME
-from broker.connection import close_connection_to_broker
+from exceptions.broker import PublisherCantConnectToBrokerError
+from broker.connection import (
+    get_connection_to_broker,
+    close_connection_to_broker
+)
 from logger import logger
 
 
 class NotePublisher:
     """
     NotePublisher is an context manager to publish message to delete user`s notes.
-    It receives ready connection and after meeeage publishing closes connection. 
+    It opens connection and after message publishing, closes connection. 
     """
-    def __init__(self, connection: AbstractConnection) -> None:
-        self.connection = connection
+    def __init__(self) -> None:
+        self.connection: AbstractConnection = None
         self.channel: AbstractChannel = None
 
     async def __aenter__(self) -> Self:
+        self.connection = await get_connection_to_broker()
+        if self.connection is None:
+            logger.warning("Publisher can`t connect to broker")
+            raise PublisherCantConnectToBrokerError(
+                "Publisher can`t connect to broker, broker not available"
+            )
         logger.info("Publisher has opened connection")
         return self
     
