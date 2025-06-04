@@ -1,8 +1,10 @@
 from enum import Enum
 from datetime import datetime
+from uuid import UUID, uuid4
 
 from sqlalchemy.orm import mapped_column, Mapped 
 from sqlalchemy import String, text
+from sqlalchemy import UUID as SQL_UUID
 
 from core.database import Base
 
@@ -19,8 +21,8 @@ class Gender(Enum):
 class User(Base):
     __tablename__ = 'users'
 
-    id: Mapped[int] = mapped_column(primary_key=True, 
-                                    autoincrement=True)
+    id: Mapped[UUID] = mapped_column(SQL_UUID, primary_key=True, 
+                                     default=uuid4)
     username: Mapped[str] = mapped_column(String(50),
                                           unique=True)
     gender: Mapped[Gender] = mapped_column(default=Gender.unknown)
