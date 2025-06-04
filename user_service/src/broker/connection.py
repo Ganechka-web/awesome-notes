@@ -6,7 +6,8 @@ from core.settings import rabbitmq_settings
 from logger import logger
 
 
-async def get_connection_to_broker() -> AbstractConnection:
+async def get_connection_to_broker() -> AbstractConnection | None:
+    """Creates connection to broker and returns it"""
     try:
         connection = await connect(
             host=rabbitmq_settings.host,
@@ -21,6 +22,7 @@ async def get_connection_to_broker() -> AbstractConnection:
 
 
 async def close_connection_to_broker(connection: AbstractConnection) -> None:
+    """Closes connection if it is active"""
     if not connection or connection.is_closed:
         logger.critical("Message broker hasn`t been connected, shutting down failed")
         return
