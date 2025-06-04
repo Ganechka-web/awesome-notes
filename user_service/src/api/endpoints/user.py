@@ -15,7 +15,6 @@ from exceptions.services import (
 from exceptions.broker import PublisherCantConnectToBrokerError
 from shemas.user import (
     UserOutputShema, 
-    UserCreateShema,
     UserUpgrateShema
 )
 
@@ -58,25 +57,13 @@ async def get_one_by_username(username: Annotated[str, Path()]) -> UserOutputShe
 
     return user
 
-@users_router.post('/create/')
-async def create_one(new_user: UserCreateShema):
-    try:
-        new_user_id = await user_service.create_one(new_user=new_user)
-    except UserAlreadyExistsError:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT,
-            detail='User with this username - already exists'
-        )
-
-    return new_user_id
-
 
 @users_router.patch('/update/{user_id}')
 async def update_one(user_id: Annotated[int, Path()], 
                      updated_user: UserUpgrateShema):
     try:
         await user_service.update_one(user_id=user_id,
-                                  updated_user=updated_user)
+                                      updated_user=updated_user)
     except UserAlreadyExistsError:
        raise HTTPException(
             status.HTTP_409_CONFLICT,
