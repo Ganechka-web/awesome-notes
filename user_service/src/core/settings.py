@@ -12,7 +12,7 @@ class PostgresSettings:
     port: int = os.getenv("POSTGRES_PORT", 5432)
     user: str = os.getenv("POSTGRES_USER", "postgres")
     password: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    db: str = os.getenv("POSTGRES_NAME", "postgres")
+    db: str = os.getenv("POSTGRES_DB", "postgres")
 
 
 postgres_settings = PostgresSettings()
