@@ -48,7 +48,7 @@ class UserService:
 
         return UserOutputShema.model_validate(user)
 
-    async def create_one(self, new_user: UserCreateShema) -> int:
+    async def create_one(self, new_user: UserCreateShema) -> str:
         new_user_orm = User(**new_user.__dict__)
         try:
             new_user_id = await self.repository.create_one(user=new_user_orm)
