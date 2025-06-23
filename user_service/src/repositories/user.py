@@ -43,7 +43,7 @@ class UserRepository:
                     f'No such row username - {username}'
                 ) from e
 
-    async def create_one(self, user: User) -> int:
+    async def create_one(self, user: User) -> str:
         async with AsyncSession(self.engine) as session:
             session.add(user)
             try:
