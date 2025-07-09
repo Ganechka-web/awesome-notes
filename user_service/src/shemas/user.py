@@ -1,12 +1,14 @@
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, field_serializer
 
 from models.user import Gender
 
 
 class UserCreateShema(BaseModel):
+    id: Optional[UUID] = None
     username: str = Field(max_length=50)
     gender: str
     age: int = Field(ge=18, le=110)
@@ -22,6 +24,10 @@ class UserCreateShema(BaseModel):
         if gender not in genders:
             raise ValueError(f'Gender can be only {', '.join(genders)}')
         return gender
+    
+    @field_serializer('id')
+    def serialize_id(self, id: UUID, _info) -> str:
+        return str(id)
 
 
 class UserUpgrateShema(UserCreateShema):
@@ -31,7 +37,7 @@ class UserUpgrateShema(UserCreateShema):
 
 
 class UserOutputShema(UserCreateShema):
-    id: int
+    id: UUID
     joined_at: datetime
     updated_at: datetime
 
