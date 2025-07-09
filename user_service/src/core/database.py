@@ -9,6 +9,8 @@ class AsyncDatabase:
     def __init__(
         self, host: str, port: int, username: str, password: str, db: str
     ) -> None:
+        """AsyncDatabase is an class for managing database connection and session"""
+
         self.postgres_dcn = URL.create(
             drivername="postgresql+asyncpg",
             host=host,

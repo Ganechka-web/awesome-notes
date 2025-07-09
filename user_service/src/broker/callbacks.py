@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 
 class CreateUserCallback:
+    """CreateUserCallback is an class for message handing and sending reply with new entity id"""
+
     def __init__(self, user_service: "UserService"):
         self.user_service = user_service
 

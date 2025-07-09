@@ -10,6 +10,8 @@ from logger import logger
 
 
 class AsyncBroker:
+    """Async broker is an class for managing broker connection, consuming and publishing"""
+
     def __init__(self, host: str, port: int, login: str, password: str) -> None:
         self.host = host
         self.port = port
