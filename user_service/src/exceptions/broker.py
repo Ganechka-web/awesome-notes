@@ -4,6 +4,5 @@ class BrokerError(Exception):
         super().__init__(*args)
 
 
-class PublisherCantConnectToBrokerError(BrokerError):
-    """Raises when get_connection_to_broker returns None"""
+class UnableToConnectToBrokerError(BrokerError):
     pass
