@@ -25,6 +25,7 @@ class RabbitMQSettings:
     password: str = os.getenv('RABBITMQ_PASSWORD', 'guest')
 
 
+USER_CREATION_QUEUE_NAME = 'user_creation_queue'
 rabbitmq_settings = RabbitMQSettings()
 
 # security
