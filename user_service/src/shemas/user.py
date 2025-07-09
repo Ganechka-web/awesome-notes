@@ -15,17 +15,16 @@ class UserCreateShema(BaseModel):
 
     class Config:
         from_attributes = True
-    
-    @field_validator('gender')
+
+    @field_validator("gender")
     @classmethod
     def validate_user_gender(cls, gender: str) -> str:
-        genders = (Gender.male.value, Gender.female.value, 
-                   Gender.unknown.value)
+        genders = (Gender.male.value, Gender.female.value, Gender.unknown.value)
         if gender not in genders:
-            raise ValueError(f'Gender can be only {', '.join(genders)}')
+            raise ValueError(f"Gender can be only {', '.join(genders)}")
         return gender
-    
-    @field_serializer('id')
+
+    @field_serializer("id")
     def serialize_id(self, id: UUID, _info) -> str:
         return str(id)
 

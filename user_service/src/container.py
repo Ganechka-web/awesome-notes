@@ -21,23 +21,17 @@ class Container(containers.DeclarativeContainer):
         password=config.postgres_settings.password,
         db=config.postgres_settings.db,
     )
-    user_repository = providers.Factory(
-        UserRepository,
-        database=user_database
-    )
+    user_repository = providers.Factory(UserRepository, database=user_database)
     user_broker = providers.Singleton(
         AsyncBroker,
         host=config.rabbitmq_settings.host,
         port=config.rabbitmq_settings.port,
         login=config.rabbitmq_settings.user,
-        password=config.rabbitmq_settings.password
+        password=config.rabbitmq_settings.password,
     )
     user_service = providers.Factory(
-        UserService,
-        repository=user_repository,
-        broker=user_broker
+        UserService, repository=user_repository, broker=user_broker
     )
     create_user_callback = providers.Factory(
-        CreateUserCallback,
-        user_service=user_service
+        CreateUserCallback, user_service=user_service
     )

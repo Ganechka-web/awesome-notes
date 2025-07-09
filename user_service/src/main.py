@@ -19,7 +19,8 @@ async def lifespan(app: FastAPI):
     )
     app.container = dep_container
     await app.container.user_broker().consume(
-        queue_name=USER_CREATION_QUEUE_NAME, callback=app.container.create_user_callback()
+        queue_name=USER_CREATION_QUEUE_NAME,
+        callback=app.container.create_user_callback(),
     )
     yield
     await app.container.user_broker().shutdown()
