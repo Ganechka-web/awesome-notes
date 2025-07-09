@@ -1,3 +1,5 @@
+import json
+
 from schemas.auth import (
     AuthCredentialsSchema,
     AuthCredentialsRegisterSchema,
@@ -5,14 +7,19 @@ from schemas.auth import (
 )
 from models.auth import AuthCredentials
 from repositories.auth import AuthRepository
-from exceptions.repositories import RowDoesNotExist, RowAlreadyExists
+from exceptions.repositories import RowDoesNotExist
 from exceptions.services import (
     AuthCredentialsNotFoundError, 
     AuthCredentialsAlreadyExistsError,
     PasswordsDidNotMatch
 )
+from exceptions.broker import (
+    PublisherCantConnectToBrokerError,
+    PublisherTimeoutReceivingResponseError
+)
 from security.passwords import get_password_hash, check_password_hash
 from security.jwt import get_jwt_token
+from broker.publishers import UserCreationPublisher
 
 
 class AuthService:
@@ -32,22 +39,44 @@ class AuthService:
 
         return AuthCredentialsSchema.model_validate(credentials_orm)
     
-    async def register(self, credentials: AuthCredentialsRegisterSchema) -> int:
-        password_hash = get_password_hash(credentials.password)
-        credentials.password = password_hash
-
-        auth_credentials = AuthCredentials(**credentials.model_dump())
+    async def register(self, credentials: AuthCredentialsRegisterSchema) -> str:
+        # check credentials existence
+        common_id: int
         try:
+            _ = await self.repository.get_one_by_login(
+                login=credentials.login
+            )
+            raise AuthCredentialsAlreadyExistsError(
+                f'AuthCredentials with login - {credentials.login}'
+                'already exists'
+            )
+        except RowDoesNotExist:
+            # sending message on user creation
+            try:
+                async with UserCreationPublisher() as publisher:
+                    user_data = credentials.user_data
+                    data = bytes(
+                        json.dumps(user_data.model_dump()),
+                        encoding='utf-8'
+                    )
+                    
+                    common_id = await publisher.publish_and_get_created_user_id(data=data)
+            except (PublisherCantConnectToBrokerError,
+                    PublisherTimeoutReceivingResponseError):
+                raise 
+
+            # creating and setting up password hash
+            password_hash = get_password_hash(credentials.password)
+            credentials.password = password_hash
+
+            auth_credentials = AuthCredentials(**credentials.model_dump(exclude="user_data"))
+            # setting up the common id
+            auth_credentials.id = common_id
             new_credentials_id = await self.repository.create_one(
                 credentials=auth_credentials
             )
-        except RowAlreadyExists as e:
-            raise AuthCredentialsAlreadyExistsError(
-                f'AuthCredentials with login - {credentials.login}'
-                'already exist'
-            ) from e
-        
-        return new_credentials_id
+            
+            return new_credentials_id
     
     async def login(self, credentials: AuthCredentialsLoginSchema) -> str:
         # check credentials existence
