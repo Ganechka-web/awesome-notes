@@ -15,9 +15,15 @@ if TYPE_CHECKING:
 
 
 class UserService:
-    def __init__(self, repository: "UserRepository", broker: "AsyncBroker"):
+    def __init__(
+        self,
+        repository: "UserRepository",
+        broker: "AsyncBroker",
+        delete_notes_quque_name: str,
+    ):
         self.repository = repository
         self.broker = broker
+        self.delete_notes_quque_name = delete_notes_quque_name
 
     async def get_all(self) -> list[UserOutputShema]:
         users = await self.repository.get_all()
@@ -77,8 +83,10 @@ class UserService:
 
         # create and publish message for deleting all user`s notes
         try:
-            data = bytes(json.dumps({"user_id": user_id}), encoding="utf-8")
-            await self.broker.publish(data=data)
+            data = bytes(json.dumps({"user_id": user_id.hex}).encode("utf-8"))
+            await self.broker.publish(
+                queue_name=self.delete_notes_quque_name, data=data
+            )
         except UnableToConnectToBrokerError:
             logger.warning("Unable to send message, publisher unavailable")
             raise
