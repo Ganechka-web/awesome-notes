@@ -5,6 +5,7 @@ from core.database import AsyncDatabase
 from repositories.user import UserRepository
 from services.user import UserService
 from broker.callbacks import CreateUserCallback
+from core.settings import DELETE_NOTES_QUEUE_NAME
 
 
 class Container(containers.DeclarativeContainer):
@@ -30,7 +31,10 @@ class Container(containers.DeclarativeContainer):
         password=config.rabbitmq_settings.password,
     )
     user_service = providers.Factory(
-        UserService, repository=user_repository, broker=user_broker
+        UserService,
+        repository=user_repository,
+        broker=user_broker,
+        delete_notes_quque_name=DELETE_NOTES_QUEUE_NAME,
     )
     create_user_callback = providers.Factory(
         CreateUserCallback, user_service=user_service
