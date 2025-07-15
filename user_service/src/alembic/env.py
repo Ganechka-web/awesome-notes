@@ -1,13 +1,14 @@
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import pool
+from sqlalchemy import pool, URL
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from core.database import Base, postgres_dcn
+from core.settings import postgres_settings
+from core.database import Base
 from models.user import User # noqa
 
 # this is the Alembic Config object, which provides
@@ -20,7 +21,17 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 
-config.set_main_option('sqlalchemy.url', postgres_dcn)
+postgres_dsn = URL.create(
+    drivername="postgresql+asyncpg",
+    host=postgres_settings.host,
+    port=postgres_settings.port,
+    username=postgres_settings.user,
+    password=postgres_settings.password,
+    database=postgres_settings.db,
+).render_as_string(hide_password=False)
+print(postgres_dsn)
+
+config.set_main_option("sqlalchemy.url", postgres_dsn)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
