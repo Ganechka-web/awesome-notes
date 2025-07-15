@@ -1,10 +1,18 @@
+import os
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
 
+BASE_DIR = Path(__file__).parent.parent
+
+
 class PostgresSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env", env_file_encoding="utf-8", extra="ignore"
+        env_file=os.path.join(BASE_DIR, "..", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     host: str = Field("127.0.0.1", alias="POSTGRES_HOST")
@@ -19,7 +27,9 @@ postgres_settings = PostgresSettings()
 
 class RabbitMQSettings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env", env_file_encoding="utf-8", extra="ignore"
+        env_file=os.path.join(BASE_DIR, "..", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     host: str = Field("127.0.0.1", alias="RABBITMQ_HOST")
