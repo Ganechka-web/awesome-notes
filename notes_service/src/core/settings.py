@@ -27,7 +27,9 @@ postgres_settings = PostgresSettings()
 
 class RabbitMQSettings(BaseSettings):
     model_config = ConfigDict(
-        env_file="../.env", env_file_encoding="utf-8", extra="ignore"
+        env_file=os.path.join(BASE_DIR, "..", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     host: str = Field("127.0.0.1", alias="RABBITMQ_HOST")
