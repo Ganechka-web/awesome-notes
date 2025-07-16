@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from repositories.specifications import NotesForOwnerSpecification
 from models.note import Note
-from shemas.note import NoteOutputShema, NoteCreateShema, NoteUpdateShema
+from schemas.note import NoteOutputShema, NoteCreateShema, NoteUpdateShema
 from services.validators import NoteTitleUniqueForOwnerValidator
 from exceptions.repository import NoSuchRowError
 from exceptions.service import NoteNotFoundError

@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Path, HTTPException, Depends, status
 from dependency_injector.wiring import Provide, inject
 
-from shemas.note import NoteOutputShema, NoteCreateShema, NoteUpdateShema
+from schemas.note import NoteOutputShema, NoteCreateShema, NoteUpdateShema
 from exceptions.service import NoteNotFoundError, NoteAlreadyExistsError
 from container import Container
 
