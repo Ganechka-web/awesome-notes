@@ -1,9 +1,13 @@
 from exceptions.base import AuthServiceException
 
 
-class PublisherCantConnectToBrokerError(AuthServiceException):
-    """Raises when get_connection_to_broker returns None"""
+class BrokerError(AuthServiceException):
+    pass
 
 
-class PublisherTimeoutReceivingResponseError(AuthServiceException):
-    """Raises when publisher was waiting for response too long"""
+class UnableToConnectToBrokerError(BrokerError):
+    pass
+
+
+class ReceivingResponseTimeOutError(BrokerError):
+    """Raises when RPC client was waiting for response too long"""
