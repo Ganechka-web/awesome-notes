@@ -15,3 +15,9 @@ class AuthCredentialsAlreadyExistsError(ServiceError):
 
 class PasswordsDidNotMatch(ServiceError):
     pass
+
+
+class UnableToCreareAuthCredentials(ServiceError):
+    """Raises when broker can`t created user id, or broker is unavailable"""
+
+    pass
