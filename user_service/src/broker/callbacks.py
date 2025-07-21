@@ -36,7 +36,7 @@ class CreateUserCallback:
         if message.reply_to:
             await channel.default_exchange.publish(
                 message=Message(
-                    body=json.dumps({"new_user_id": new_user_id.hex}).encode(
+                    body=json.dumps({"created_user_id": new_user_id.hex}).encode(
                         encoding="utf-8"
                     ),
                     correlation_id=message.correlation_id,
