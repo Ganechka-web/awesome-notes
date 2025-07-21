@@ -1,43 +1,45 @@
-import asyncio
-
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import URL, text
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import URL
 
-from core.settings import postgres_settings
 from logger import logger
 
 
-postgres_dcn = URL.create(
-    drivername="postgresql+asyncpg",
-    host=postgres_settings.host,
-    port=postgres_settings.port,
-    username=postgres_settings.user,
-    password=postgres_settings.password,
-    database=postgres_settings.db,
-).render_as_string(hide_password=False)
+class AsyncDatabase:
+    """AsyncDatabase is a class for managing database connection and session"""
 
-async_engine = create_async_engine(
-    postgres_dcn,
-    echo=True
-)
+    def __init__(
+        self, host: str, port: int, username: str, password: str, db: str
+    ) -> None:
+        self.postgres_dcn = URL.create(
+            drivername="postgresql+asyncpg",
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            database=db,
+        )
+        self.async_engine: AsyncEngine | None = None
+        self.session: AsyncSession | None = None
+
+    def _create_async_engine(self) -> None:
+        if self.async_engine is None:
+            self.async_engine = create_async_engine(self.postgres_dcn, echo=True)
+            logger.info("Database is connected and ready to execute queries")
+
+    def get_session(self) -> AsyncSession:
+        if self.async_engine is None:
+            self._create_async_engine()
+
+        if self.session is None:
+            self.session = AsyncSession(bind=self.async_engine)
+        return self.session
+
+    async def shutdown(self) -> None:
+        if self.session:
+            await self.session.aclose()
+        logger.info("Database has shut down successfully")
 
 
 class Base(DeclarativeBase):
     pass
-
-
-async def healthcheck():
-    async with async_engine.connect() as conn:
-        await conn.execute(text('SELECT 1'))
-        await conn.rollback()
-        
-
-async def main():
-    try:
-        healthcheck_task = asyncio.create_task(healthcheck())
-        await asyncio.wait_for(healthcheck_task, timeout=5)
-
-        logger.info('PostgreSQL has connected successfully')
-    except (asyncio.TimeoutError, ConnectionRefusedError):
-        logger.critical('Connection to PostgreSQL failed')
