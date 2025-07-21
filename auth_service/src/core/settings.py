@@ -1,34 +1,47 @@
 import os
-import dotenv
 from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 
 BASE_DIR = Path(__file__).parent.parent
-dotenv.load_dotenv(os.path.join(BASE_DIR, '..', '.env'))
 
 
-class PostgresSettings:
-    host: str = os.getenv('POSTGRES_HOST', '127.0.0.1')
-    port: int = os.getenv('POSTGRES_PORT', 5432)
-    user: str = os.getenv('POSTGRES_USER', 'postgres')
-    password: str = os.getenv('POSTGRES_PASSWORD', 'postgres')
-    db: str = os.getenv('POSTGRES_DB', 'postgres')
+class PostgresSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(BASE_DIR, "..", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    host: str = Field("127.0.0.1", alias="POSTGRES_HOST")
+    port: int = Field(5432, alias="POSTGRES_PORT")
+    user: str = Field("postgres", alias="POSTGRES_USER")
+    password: str = Field("postgres", alias="POSTGRES_PASSWORD")
+    db: str = Field("postgres", alias="POSTGRES_DB")
 
 
 postgres_settings = PostgresSettings()
 
 
-class RabbitMQSettings:
-    host: str = os.getenv('RABBITMQ_HOST', '127.0.0.1')
-    port: int = int(os.getenv('RABBITMQ_PORT', 5672))
-    user: str = os.getenv('RABBITMG_USER', 'guest')
-    password: str = os.getenv('RABBITMQ_PASSWORD', 'guest')
+class RabbitMQSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=os.path.join(BASE_DIR, "..", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    host: str = Field("127.0.0.1", alias="RABBITMQ_HOST")
+    port: int = Field(5672, alias="RABBITMQ_PORT")
+    user: str = Field("guest", alias="RABBITMG_USER")
+    password: str = Field("guest", alias="RABBITMQ_PASSWORD")
 
 
-USER_CREATION_QUEUE_NAME = 'user_creation_queue'
+USER_CREATION_QUEUE_NAME = "user_creation_queue"
 rabbitmq_settings = RabbitMQSettings()
 
 # security
 
-SECRET_KEY = os.getenv('SECRET_KEY', '')
-ALGORITHM = os.getenv('ALGORITHM', '')
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+ALGORITHM = os.getenv("ALGORITHM", "")
