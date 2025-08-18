@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Response, Depends, status
 from dependency_injector.wiring import Provide, inject
 
 from schemas.auth import AuthCredentialsRegisterSchema, AuthCredentialsLoginSchema
+from exceptions.integration import UserCreationException
 from exceptions.services import (
     AuthCredentialsAlreadyExistsError,
     AuthCredentialsNotFoundError,
@@ -12,6 +13,7 @@ from exceptions.services import (
     UnableToCreareAuthCredentials,
 )
 from container import Container
+from logger import logger
 
 if TYPE_CHECKING:
     from services.auth import AuthService
@@ -33,11 +35,18 @@ async def register(
         raise HTTPException(
             status.HTTP_409_CONFLICT, detail="This login already exists"
         )
-    except UnableToCreareAuthCredentials:
+    except UnableToCreareAuthCredentials as e:
+        logger.error(f"User hasn`t been created, info: {e.msg}")
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to register, please try again later",
         )
+    except UserCreationException as e:
+        logger.error(
+            f"User hasn`t been created because of user_service error, "
+            f"status code - {e.http_status_code} info - {e.msg_from_service}"
+        )
+        raise HTTPException(e.http_status_code, detail=e.msg_from_service)
 
 
 @auth_router.post("/login/")
