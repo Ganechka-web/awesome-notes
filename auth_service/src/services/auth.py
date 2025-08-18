@@ -2,6 +2,7 @@ import json
 from uuid import UUID
 from typing import TYPE_CHECKING
 
+from schemas.integration_errors import UserServiceCreationErrorSchema
 from schemas.auth import (
     AuthCredentialsSchema,
     AuthCredentialsRegisterSchema,
@@ -15,6 +16,7 @@ from exceptions.services import (
     PasswordsDidNotMatch,
     UnableToCreareAuthCredentials,
 )
+from exceptions.integration import UserCreationException
 from exceptions.broker import (
     UnableToConnectToBrokerError,
     ReceivingResponseTimeOutError,
@@ -63,7 +65,9 @@ class AuthService:
                 response = await self.rpc_client.call(
                     self.user_creation_queue_name, data
                 )
-                common_id = UUID(hex=json.loads(response)["created_user_id"])
+                encoded_body = json.loads(response)
+                encoded_body_error = json.loads(encoded_body["error"])
+
             except (
                 UnableToConnectToBrokerError,
                 ReceivingResponseTimeOutError,
@@ -71,6 +75,15 @@ class AuthService:
                 raise UnableToCreareAuthCredentials(
                     "Unable to create AuthCredentials, error on the broker side"
                 ) from e
+
+            # check error on the user_service side
+            if encoded_body_error is not None:
+                error_schema = UserServiceCreationErrorSchema(**encoded_body_error)
+                raise UserCreationException(
+                    msg="Unable to create AuthCredentials because of the invalid user_data",
+                    http_status_code=error_schema.http_status_code,
+                    msg_from_service=error_schema.message,
+                )
 
             # creating and setting up password hash
             password_hash = get_password_hash(credentials.password)
