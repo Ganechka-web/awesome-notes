@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     await app.container.user_database().shutdown()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(title="User service", version="0.0.0 alpha", lifespan=lifespan)
 
 app.include_router(users_router)
 
