@@ -1,4 +1,14 @@
+version: "3"
+
 services:
+  auth-service-http:
+    build: ./auth_service
+    container_name: auth_service_http
+    env_file: auth_service/.env
+    restart: always
+    depends_on:
+      - auth-service-db
+
   user-service-db:
     image: postgres:latest
     env_file: ./user_service/.env
@@ -25,6 +35,15 @@ services:
     volumes:
       - auth_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
+
+  awesome-notes-nginx:
+    build: ./nginx/
+    container_name: awesome-notes-nginx
+    depends_on:
+      - auth-service-http
+    restart: on-failure
+    ports: 
+      - "80:80"
 
 volumes:
   user_async_service_postgres_data:
