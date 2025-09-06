@@ -1,14 +1,15 @@
 from dependency_injector import containers, providers
 
-from core.database import AsyncDatabase
-from repositories.auth import AuthRepository
-from services.auth import AuthService
-from core.broker import AsyncBroker
-from broker.rpc_clients import UserCreationRPCClient
+from src.core.database import AsyncDatabase
+from src.core.broker import AsyncBroker
+from src.services.auth import AuthService
+from src.services.security import SecurityPasswordService
+from src.repositories.auth import AuthRepository
+from src.broker.rpc_clients import UserCreationRPCClient
 
 
 class Container(containers.DeclarativeContainer):
-    wiring_config = containers.WiringConfiguration(modules=["api.endpoints.auth"])
+    wiring_config = containers.WiringConfiguration(modules=["src.api.v1.auth"])
 
     config = providers.Configuration()
 
@@ -31,10 +32,12 @@ class Container(containers.DeclarativeContainer):
         UserCreationRPCClient,
         broker=auth_broker,
     )
+    password_service = providers.Singleton(SecurityPasswordService)
     auth_repository = providers.Factory(AuthRepository, database=auth_database)
     auth_service = providers.Factory(
         AuthService,
         repository=auth_repository,
         rpc_client=user_creation_rpc_client,
+        password_service=password_service,
         user_creation_queue_name=config.queue_names.user_creation_queue_name,
     )
