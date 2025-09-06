@@ -2,31 +2,31 @@ import json
 from uuid import UUID
 from typing import TYPE_CHECKING
 
-from schemas.integration_errors import UserServiceCreationErrorSchema
-from schemas.auth import (
+from src.schemas.integration_errors import UserServiceCreationErrorSchema
+from src.schemas.auth import (
     AuthCredentialsSchema,
     AuthCredentialsRegisterSchema,
     AuthCredentialsLoginSchema,
 )
-from models.auth import AuthCredentials
-from exceptions.repositories import RowDoesNotExist
-from exceptions.services import (
+from src.models.auth import AuthCredentials
+from src.exceptions.repositories import RowDoesNotExist
+from src.exceptions.services import (
     AuthCredentialsNotFoundError,
     AuthCredentialsAlreadyExistsError,
     PasswordsDidNotMatch,
     UnableToCreareAuthCredentials,
 )
-from exceptions.integration import UserCreationException
-from exceptions.broker import (
+from src.exceptions.integration import UserCreationException
+from src.exceptions.broker import (
     UnableToConnectToBrokerError,
     ReceivingResponseTimeOutError,
 )
-from security.passwords import get_password_hash, check_password_hash
-from security.jwt import get_jwt_token
+from src.security.jwt import get_jwt_token
 
 if TYPE_CHECKING:
-    from repositories.auth import AuthRepository
-    from broker.rpc_clients import RPCClient
+    from src.repositories.auth import AuthRepository
+    from src.broker.rpc_clients import RPCClient
+    from src.services.security import SecurityPasswordService
 
 
 class AuthService:
@@ -34,10 +34,12 @@ class AuthService:
         self,
         repository: "AuthRepository",
         rpc_client: "RPCClient",
+        password_service: "SecurityPasswordService",
         user_creation_queue_name: str,
     ) -> None:
         self.repository = repository
         self.rpc_client = rpc_client
+        self.password_service = password_service
         self.user_creation_queue_name = user_creation_queue_name
 
     async def get_one_by_login(self, login: str) -> AuthCredentialsSchema:
@@ -86,7 +88,9 @@ class AuthService:
                 )
 
             # creating and setting up password hash
-            password_hash = get_password_hash(credentials.password)
+            password_hash = self.password_service.generate_password_hash(
+                credentials.password
+            )
             credentials.password = password_hash
 
             auth_credentials = AuthCredentials(
@@ -112,7 +116,7 @@ class AuthService:
             ) from e
 
         # check passwords
-        is_passwords_equal = check_password_hash(
+        is_passwords_equal = self.password_service.verify_password_hash(
             credentials.password, credentials_orm.password
         )
         if is_passwords_equal:
