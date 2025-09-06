@@ -1,0 +1,18 @@
+[
+    {
+        "login": "test_user_1",
+        "password": "qwertyui1234"
+    },
+    {
+        "login": "test_user_2",
+        "password": "1234"
+    },
+    {
+        "login": "test_user_3",
+        "password": "password@@@"
+    },    
+    {
+        "login": "test_user_4",
+        "password": "password**72##$"
+    }
+]
