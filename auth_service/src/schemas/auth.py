@@ -47,4 +47,4 @@ class AuthCredentialsLoginSchema(BaseModel):
 
 
 class AuthCredentialsSchema(AuthCredentialsLoginSchema):
-    id: int
+    id: UUID
