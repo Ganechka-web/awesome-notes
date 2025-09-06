@@ -3,7 +3,7 @@ from datetime import datetime
 
 from jose import jwt
 
-from core.settings import SECRET_KEY, ALGORITHM
+from src.core.settings import SECRET_KEY, ALGORITHM
 
 
 def get_jwt_token(login: str) -> str:
