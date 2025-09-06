@@ -1,26 +1,46 @@
 from uuid import UUID
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
-from fastapi import APIRouter, HTTPException, Response, Depends, status
+from fastapi import APIRouter, HTTPException, Response, Depends, Path, status
 from dependency_injector.wiring import Provide, inject
 
-from schemas.auth import AuthCredentialsRegisterSchema, AuthCredentialsLoginSchema
-from exceptions.integration import UserCreationException
-from exceptions.services import (
+from src.schemas.auth import (
+    AuthCredentialsRegisterSchema,
+    AuthCredentialsLoginSchema,
+    AuthCredentialsSchema,
+)
+from src.exceptions.integration import UserCreationException
+from src.exceptions.services import (
     AuthCredentialsAlreadyExistsError,
     AuthCredentialsNotFoundError,
     PasswordsDidNotMatch,
     UnableToCreareAuthCredentials,
 )
-from container import Container
-from logger import logger
+from src.container import Container
+from src.logger import logger
 
 if TYPE_CHECKING:
-    from services.auth import AuthService
+    from src.services.auth import AuthService
 
 
 auth_router = APIRouter(prefix="/auth")
 
+
+@auth_router.get("/{login}")
+@inject
+async def get_one_by_login(
+    login: Annotated[str, Path()],
+    auth_service: "AuthService" = Depends(Provide[Container.auth_service]),
+) -> AuthCredentialsSchema:
+    try:
+        credentials = await auth_service.get_one_by_login(login=login)
+    except AuthCredentialsNotFoundError:
+        return HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail=f"AuthCredentials with {login=} does not exist"
+        )
+
+    return credentials
 
 @auth_router.post("/register/")
 @inject
@@ -30,7 +50,6 @@ async def register(
 ) -> UUID:
     try:
         new_credentials_id = await auth_service.register(credentials=credentials)
-        return new_credentials_id
     except AuthCredentialsAlreadyExistsError:
         raise HTTPException(
             status.HTTP_409_CONFLICT, detail="This login already exists"
@@ -47,6 +66,8 @@ async def register(
             f"status code - {e.http_status_code} info - {e.msg_from_service}"
         )
         raise HTTPException(e.http_status_code, detail=e.msg_from_service)
+
+    return new_credentials_id
 
 
 @auth_router.post("/login/")
