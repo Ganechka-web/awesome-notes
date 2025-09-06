@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 
 from aio_pika.abc import AbstractMessage, AbstractQueue
 
-from exceptions.broker import ReceivingResponseTimeOutError
-from logger import logger
+from src.exceptions.broker import ReceivingResponseTimeOutError
+from src.logger import logger
 
 if TYPE_CHECKING:
     from core.broker import AsyncBroker
