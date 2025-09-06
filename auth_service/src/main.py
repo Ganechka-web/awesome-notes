@@ -3,13 +3,19 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
-from container import Container
-from core.settings import USER_CREATION_QUEUE_NAME, postgres_settings, rabbitmq_settings
-from api.endpoints.auth import auth_router
+from src.container import Container
+from src.core.settings import USER_CREATION_QUEUE_NAME, postgres_settings, rabbitmq_settings
+from src.api.v1.auth import auth_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    yield
+    await app.container.auth_broker().shutdown()
+    await app.container.auth_database().shutdown()
+
+
+def create_app() -> FastAPI:
     dep_container = Container()
     dep_container.config.from_dict(
         {
@@ -18,14 +24,13 @@ async def lifespan(app: FastAPI):
             "queue_names": {"user_creation_queue_name": USER_CREATION_QUEUE_NAME},
         }
     )
+    app = FastAPI(lifespan=lifespan)
     app.container = dep_container
-    yield
-    await app.container.auth_broker().shutdown()
-    await app.container.auth_database().shutdown()
+    return app
 
 
-app = FastAPI(lifespan=lifespan)
+app = create_app()
 app.include_router(auth_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8002, reload=True)
