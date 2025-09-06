@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from core.database import Base, postgres_dcn
-from models.auth import AuthCredentials # noqa
+from src.core.database import Base, postgres_dcn
+from src.models.auth import AuthCredentials # noqa
 
 
 # this is the Alembic Config object, which provides
