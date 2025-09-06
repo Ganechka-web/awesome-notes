@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy import select
 
-from models.auth import AuthCredentials
-from exceptions.repositories import RowDoesNotExist, RowAlreadyExists
+from src.models.auth import AuthCredentials
+from src.exceptions.repositories import RowDoesNotExist, RowAlreadyExists
 
 if TYPE_CHECKING:
-    from core.database import AsyncDatabase
+    from src.core.database import AsyncDatabase
 
 
 class AuthRepository:
@@ -18,16 +18,14 @@ class AuthRepository:
 
     async def get_one_by_login(self, login: str) -> AuthCredentials:
         async with self.db.get_session() as session:
-            query = select(self.model.login, self.model.password).where(
+            query = select(AuthCredentials).where(
                 self.model.login == login
             )
-            result = await session.execute(query)
-
+            result = await session.scalars(query)
             try:
-                credentials = result.scalar_one()
+                credentials = result.one()
             except NoResultFound as e:
-                raise RowDoesNotExist(f"Unable to find row with login - {login}") from e
-
+                raise RowDoesNotExist(f"Unable to find row with {login=}") from e
             return credentials
 
     async def create_one(self, credentials: AuthCredentials) -> int:
