@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, UUID as SQL_UUID
 
-from core.database import Base
+from src.core.database import Base
 
 
 class AuthCredentials(Base):
