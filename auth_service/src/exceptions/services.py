@@ -1,4 +1,4 @@
-from exceptions.base import AuthServiceException
+from src.exceptions.base import AuthServiceException
 
 
 class ServiceError(AuthServiceException):
