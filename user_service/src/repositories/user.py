@@ -1,15 +1,19 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy import select
 
-from src.core.database import AsyncDatabase
 from src.exceptions.repositories import DataBaseError
 from src.models.user import User
+
+if TYPE_CHECKING:
+    from src.core.database import AsyncDatabase
 
 
 class UserRepository:
     model = User
 
-    def __init__(self, database: AsyncDatabase):
+    def __init__(self, database: "AsyncDatabase"):
         self.db = database
 
     async def get_all(self) -> list[User]:
