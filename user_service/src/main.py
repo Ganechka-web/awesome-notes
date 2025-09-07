@@ -3,9 +3,9 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
-from container import Container
-from core.settings import postgres_settings, rabbitmq_settings, USER_CREATION_QUEUE_NAME
-from api.endpoints.user import users_router
+from src.container import Container
+from src.core.settings import postgres_settings, rabbitmq_settings, USER_CREATION_QUEUE_NAME
+from src.api.endpoints.user import users_router
 
 
 @asynccontextmanager

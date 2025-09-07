@@ -6,7 +6,7 @@ from sqlalchemy.orm import mapped_column, Mapped
 from sqlalchemy import String, text
 from sqlalchemy import UUID as SQL_UUID
 
-from core.database import Base
+from src.core.database import Base
 
 
 SQL_TIMEZONE_NOW = text("TIMEZONE('utc', now())")

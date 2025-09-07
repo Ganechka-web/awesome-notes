@@ -1,11 +1,11 @@
 from dependency_injector import containers, providers
 
-from core.broker import AsyncBroker
-from core.database import AsyncDatabase
-from repositories.user import UserRepository
-from services.user import UserService
-from broker.callbacks import CreateUserCallback
-from core.settings import DELETE_NOTES_QUEUE_NAME
+from src.core.broker import AsyncBroker
+from src.core.database import AsyncDatabase
+from src.repositories.user import UserRepository
+from src.services.user import UserService
+from src.broker.callbacks import CreateUserCallback
+from src.core.settings import DELETE_NOTES_QUEUE_NAME
 
 
 class Container(containers.DeclarativeContainer):

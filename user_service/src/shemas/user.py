@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, field_serializer
 
-from models.user import Gender
+from src.models.user import Gender
 
 
 class UserCreateShema(BaseModel):

@@ -2,16 +2,16 @@ import json
 from uuid import UUID
 from typing import TYPE_CHECKING
 
-from shemas.user import UserOutputShema, UserCreateShema, UserUpgrateShema
-from models.user import User
-from exceptions.broker import UnableToConnectToBrokerError
-from exceptions.repositories import DataBaseError
-from exceptions.services import UserNotFoundError, UserAlreadyExistsError
-from logger import logger
+from src.shemas.user import UserOutputShema, UserCreateShema, UserUpgrateShema
+from src.models.user import User
+from src.exceptions.broker import UnableToConnectToBrokerError
+from src.exceptions.repositories import DataBaseError
+from src.exceptions.services import UserNotFoundError, UserAlreadyExistsError
+from src.logger import logger
 
 if TYPE_CHECKING:
-    from repositories.user import UserRepository
-    from core.broker import AsyncBroker
+    from src.repositories.user import UserRepository
+    from src.core.broker import AsyncBroker
 
 
 class UserService:

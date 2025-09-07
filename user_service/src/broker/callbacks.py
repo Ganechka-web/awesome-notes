@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from aio_pika.abc import AbstractIncomingMessage, AbstractChannel
 from aio_pika import Message
 
-from shemas.user import UserCreateShema
-from shemas.integration_errors import UserServiceCreationErrorSchema
-from exceptions.services import UserAlreadyExistsError
-from logger import logger
+from src.shemas.user import UserCreateShema
+from src.shemas.integration_errors import UserServiceCreationErrorSchema
+from src.exceptions.services import UserAlreadyExistsError
+from src.logger import logger
 
 if TYPE_CHECKING:
-    from services.user import UserService
+    from src.services.user import UserService
 
 
 class CreateUserCallback:

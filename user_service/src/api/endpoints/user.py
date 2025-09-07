@@ -4,11 +4,11 @@ from uuid import UUID
 from fastapi import APIRouter, Path, Depends, HTTPException, status
 from dependency_injector.wiring import Provide, inject
 
-from container import Container
-from exceptions.broker import UnableToConnectToBrokerError
-from exceptions.services import UserNotFoundError, UserAlreadyExistsError
-from services.user import UserService
-from shemas.user import UserOutputShema, UserUpgrateShema
+from src.container import Container
+from src.exceptions.broker import UnableToConnectToBrokerError
+from src.exceptions.services import UserNotFoundError, UserAlreadyExistsError
+from src.services.user import UserService
+from src.shemas.user import UserOutputShema, UserUpgrateShema
 
 
 users_router = APIRouter(prefix="/users")

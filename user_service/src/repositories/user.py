@@ -1,9 +1,9 @@
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy import select
 
-from core.database import AsyncDatabase
-from exceptions.repositories import DataBaseError
-from models.user import User
+from src.core.database import AsyncDatabase
+from src.exceptions.repositories import DataBaseError
+from src.models.user import User
 
 
 class UserRepository:
