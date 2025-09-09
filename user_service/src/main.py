@@ -31,12 +31,18 @@ def create_app() -> FastAPI:
             "rabbitmq_settings": rabbitmq_settings.model_dump(),
         }
     )
-    app = FastAPI(title="User service", version="0.0.0 alpha", lifespan=lifespan)
+    app = FastAPI(
+        title="User service",
+        version="0.0.0 alpha",
+        lifespan=lifespan,
+        root_path="/user",
+    )
     app.container = dep_container
+    return app
 
 
 app = create_app()
 app.include_router(users_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8001, reload=True)
