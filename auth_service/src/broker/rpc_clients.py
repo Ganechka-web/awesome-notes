@@ -3,7 +3,7 @@ from uuid import uuid4
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from aio_pika.abc import AbstractMessage, AbstractQueue
+from aio_pika.abc import AbstractIncomingMessage, AbstractQueue
 
 from src.exceptions.broker import ReceivingResponseTimeOutError
 from src.logger import logger
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class RPCClient(ABC):
     @abstractmethod
-    async def on_response(self, message: AbstractMessage):
+    async def on_response(self, message: AbstractIncomingMessage):
         raise NotImplementedError
 
     @abstractmethod
@@ -39,10 +39,11 @@ class UserCreationRPCClient(RPCClient):
             self._reply_queue_name = self._reply_queue.name
             await self._reply_queue.consume(callback=self.on_response)
 
-    async def on_response(self, message: AbstractMessage) -> None:
+    async def on_response(self, message: AbstractIncomingMessage) -> None:
         """Sets Future result up by the message correlation_id"""
         if message.correlation_id in self._replies:
             self._replies[message.correlation_id].set_result(message.body)
+            await message.ack()
             logger.info("RPC client has received response and processed it")
 
     async def call(self, queue_name: str, data: bytes, timeout: float = 5) -> bytes:
