@@ -10,7 +10,7 @@ from src.core.settings import DELETE_NOTES_QUEUE_NAME
 
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
-        modules=["api.endpoints.user", "broker.callbacks"]
+        modules=["src.api.endpoints.user", "src.broker.callbacks"]
     )
     config = providers.Configuration()
 
