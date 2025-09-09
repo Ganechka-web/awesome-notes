@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from src.services.auth import AuthService
 
 
-auth_router = APIRouter(prefix="/auth")
+auth_router = APIRouter()
 
 
 @auth_router.get("/{login}")
