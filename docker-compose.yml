@@ -2,10 +2,24 @@ services:
   auth-service-http:
     build: ./auth_service
     container_name: auth_service_http
-    env_file: auth_service/.env
+    env_file: "auth_service/.env"
     restart: always
     depends_on:
-      - auth-service-db
+      awesome-notes-rabbitmq:
+        condition: service_healthy
+      user-service-db:
+        condition: service_started
+  
+  user-service-http:
+    build: ./user_service
+    container_name: user_service_http
+    env_file: "user_service/.env"
+    restart: always
+    depends_on:
+      awesome-notes-rabbitmq:
+        condition: service_healthy
+      user-service-db:
+        condition: service_started
 
   user-service-db:
     image: postgres:latest
@@ -31,17 +45,26 @@ services:
     restart: always
 
   awesome-notes-rabbitmq:
-    image: rabbitmq:4.1.0-management
+    image: rabbitmq:4.1-management-alpine
+    hostname: awesome-notes-rabbitmq
     env_file: ".rabbitmq.env"
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
     volumes: 
-      - awesome-notes_rabbitmq_data:/var/lib/rabbitmq/mnesia/
+      - awesome-notes_rabbitmq_data:/var/lib/rabbitmq
     restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   awesome-notes-nginx:
     build: ./nginx/
     container_name: awesome-notes-nginx
     depends_on:
       - auth-service-http
+      - user-service-http
     restart: on-failure
     ports: 
       - "80:80"
