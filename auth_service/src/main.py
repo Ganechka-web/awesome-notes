@@ -24,7 +24,7 @@ def create_app() -> FastAPI:
             "queue_names": {"user_creation_queue_name": USER_CREATION_QUEUE_NAME},
         }
     )
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(lifespan=lifespan, root_path="/auth")
     app.container = dep_container
     return app
 
