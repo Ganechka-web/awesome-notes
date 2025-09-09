@@ -11,7 +11,7 @@ from src.services.user import UserService
 from src.shemas.user import UserOutputShema, UserUpgrateShema
 
 
-users_router = APIRouter(prefix="/users")
+users_router = APIRouter()
 
 
 @users_router.get("/")
