@@ -34,7 +34,7 @@ class RabbitMQSettings(BaseSettings):
 
     host: str = Field("127.0.0.1", alias="RABBITMQ_HOST")
     port: int = Field(5672, alias="RABBITMQ_PORT")
-    user: str = Field("guest", alias="RABBITMG_USER")
+    user: str = Field("guest", alias="RABBITMQ_USER")
     password: str = Field("guest", alias="RABBITMQ_PASSWORD")
 
 
