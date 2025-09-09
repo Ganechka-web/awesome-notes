@@ -54,7 +54,6 @@ class AuthService:
 
     async def register(self, credentials: AuthCredentialsRegisterSchema) -> str:
         # check credentials existence
-        common_id: UUID = 0  # rewrite
         try:
             _ = await self.repository.get_one_by_login(login=credentials.login)
             raise AuthCredentialsAlreadyExistsError(
@@ -68,8 +67,6 @@ class AuthService:
                     self.user_creation_queue_name, data
                 )
                 encoded_body = json.loads(response)
-                encoded_body_error = json.loads(encoded_body["error"])
-
             except (
                 UnableToConnectToBrokerError,
                 ReceivingResponseTimeOutError,
@@ -79,7 +76,8 @@ class AuthService:
                 ) from e
 
             # check error on the user_service side
-            if encoded_body_error is not None:
+            if encoded_body["error"] is not None:
+                encoded_body_error = json.loads(encoded_body["error"])
                 error_schema = UserServiceCreationErrorSchema(**encoded_body_error)
                 raise UserCreationException(
                     msg="Unable to create AuthCredentials because of the invalid user_data",
@@ -97,7 +95,7 @@ class AuthService:
                 **credentials.model_dump(exclude="user_data")
             )
             # setting up the common id
-            auth_credentials.id = common_id
+            auth_credentials.id = UUID(encoded_body["created_user_id"])
             new_credentials_id = await self.repository.create_one(
                 credentials=auth_credentials
             )
