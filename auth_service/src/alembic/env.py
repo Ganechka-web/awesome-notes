@@ -1,13 +1,14 @@
 import asyncio
 from logging.config import fileConfig
 
-from sqlalchemy import pool
+from sqlalchemy import pool, URL
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from src.core.database import Base, postgres_dcn
+from src.core.settings import postgres_settings
+from src.core.database import Base
 from src.models.auth import AuthCredentials # noqa
 
 
@@ -31,7 +32,16 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-config.set_main_option("sqlalchemy.url", postgres_dcn)
+postgres_dsn = URL.create(
+    drivername="postgresql+asyncpg",
+    host=postgres_settings.host,
+    port=postgres_settings.port,
+    username=postgres_settings.user,
+    password=postgres_settings.password,
+    database=postgres_settings.db,
+).render_as_string(hide_password=False)
+
+config.set_main_option("sqlalchemy.url", postgres_dsn)
 
 
 def run_migrations_offline() -> None:
