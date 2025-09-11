@@ -10,6 +10,7 @@ RUN apt-get update && apt-get upgrade && rm -rf /var/cache/apt/archives/*
 COPY . .
 
 RUN python3 -m pip install --no-cache-dir --upgrade pip \
-    && python3 -m pip install --no-cache-dir -r requirements.txt
+    && python3 -m pip install --no-cache-dir -r requirements.txt \
+    && chmod +x ./entrypoint.sh
 
-CMD ["python3","-m","src.main"]
+CMD ["./entrypoint.sh"]
