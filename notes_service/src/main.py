@@ -10,14 +10,6 @@ from container import Container
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    dep_container = Container()
-    dep_container.config.from_dict(
-        {
-            "postgres_settings": postgres_settings.model_dump(),
-            "rabbitmq_settings": rabbitmq_settings.model_dump(),
-        }
-    )
-    app.container = dep_container
     await app.container.note_broker().consume(
         queue_name=DELETE_NOTES_QUEUE_NAME,
         callback=app.container.delete_all_user_notes_callback(),
@@ -26,7 +18,18 @@ async def lifespan(app: FastAPI):
     await app.container.note_broker().shutdown()
 
 
-app = FastAPI(lifespan=lifespan)
+def create_app() -> FastAPI:
+    dep_container = Container()
+    dep_container.config.from_dict(
+        {
+            "postgres_settings": postgres_settings.model_dump(),
+            "rabbitmq_settings": rabbitmq_settings.model_dump(),
+        }
+    )
+    app = FastAPI(lifespan=lifespan, root_path="note/")
+    app.container = dep_container
+    return app
+
 
 app.include_router(notes_router)
 

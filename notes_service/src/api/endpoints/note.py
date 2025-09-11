@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from services.note import NoteService
 
 
-notes_router = APIRouter(prefix="/notes")
+notes_router = APIRouter()
 
 
 @notes_router.get("/")
