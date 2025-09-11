@@ -26,7 +26,7 @@ def create_app() -> FastAPI:
             "rabbitmq_settings": rabbitmq_settings.model_dump(),
         }
     )
-    app = FastAPI(lifespan=lifespan, root_path="note/")
+    app = FastAPI(lifespan=lifespan, root_path="/note")
     app.container = dep_container
     return app
 
@@ -35,4 +35,4 @@ app = create_app()
 app.include_router(notes_router)
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", port=8001, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8003, reload=True)
