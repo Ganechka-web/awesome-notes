@@ -31,6 +31,7 @@ def create_app() -> FastAPI:
     return app
 
 
+app = create_app()
 app.include_router(notes_router)
 
 if __name__ == "__main__":
