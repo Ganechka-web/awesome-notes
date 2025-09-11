@@ -1,14 +1,14 @@
 from dependency_injector import containers, providers
 
-from core.database import AsyncDatabase
-from repositories.note import NoteRepository
-from services.note import NoteService
-from core.broker import AsyncBroker
-from broker.callbacks import DeleteAllUserNotesCallback
+from src.core.database import AsyncDatabase
+from src.repositories.note import NoteRepository
+from src.services.note import NoteService
+from src.core.broker import AsyncBroker
+from src.broker.callbacks import DeleteAllUserNotesCallback
 
 
 class Container(containers.DeclarativeContainer):
-    wiring_config = containers.WiringConfiguration(modules=["api.endpoints.note"])
+    wiring_config = containers.WiringConfiguration(modules=["src.api.endpoints.note"])
     config = providers.Configuration()
 
     note_database = providers.Singleton(

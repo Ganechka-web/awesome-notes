@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 
 from aio_pika.abc import AbstractIncomingMessage
 
-from logger import logger
+from src.logger import logger
 
 if TYPE_CHECKING:
-    from services.note import NoteService
+    from src.services.note import NoteService
 
 
 class BaseCallback(ABC):

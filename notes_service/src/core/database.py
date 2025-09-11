@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSessio
 from sqlalchemy import URL
 from sqlalchemy.orm import DeclarativeBase
 
-from logger import logger
+from src.logger import logger
 
 
 class AsyncDatabase:

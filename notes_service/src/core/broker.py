@@ -4,11 +4,11 @@ from aio_pika.abc import AbstractConnection, AbstractChannel
 from aio_pika.exceptions import AMQPConnectionError
 from aio_pika import connect, Message
 
-from exceptions.broker import UnableToConnectToBrokerError
-from logger import logger
+from src.exceptions.broker import UnableToConnectToBrokerError
+from src.logger import logger
 
 if TYPE_CHECKING:
-    from broker.callbacks import BaseCallback
+    from src.broker.callbacks import BaseCallback
 
 
 class AsyncBroker:

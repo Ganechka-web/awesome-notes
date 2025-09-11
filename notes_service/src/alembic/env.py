@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from core.settings import postgres_settings
-from core.database import Base
-from models.note import Note  # noqa
+from src.core.settings import postgres_settings
+from src.core.database import Base
+from src.models.note import Note  # noqa
 
 
 # this is the Alembic Config object, which provides

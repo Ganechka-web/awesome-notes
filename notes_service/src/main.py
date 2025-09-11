@@ -3,9 +3,9 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
-from api.endpoints.note import notes_router
-from core.settings import postgres_settings, rabbitmq_settings, DELETE_NOTES_QUEUE_NAME
-from container import Container
+from src.api.endpoints.note import notes_router
+from src.core.settings import postgres_settings, rabbitmq_settings, DELETE_NOTES_QUEUE_NAME
+from src.container import Container
 
 
 @asynccontextmanager
@@ -34,4 +34,4 @@ def create_app() -> FastAPI:
 app.include_router(notes_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8001, reload=True)
+    uvicorn.run("src.main:app", port=8001, reload=True)
