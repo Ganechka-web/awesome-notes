@@ -11,3 +11,7 @@ class RowDoesNotExist(DataBaseError):
 
 class RowAlreadyExists(DataBaseError):
     pass
+
+
+class ColumnContentTooLongError(DataBaseError):
+    pass
