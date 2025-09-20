@@ -33,6 +33,25 @@ class TestAuthRepository:
             credentials = await auth_repository.get_one_by_login(login=login)
 
             assert credentials.login == expected_login
+        
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("id", "login", "is_exists"),
+        (
+            ("32f706a8-871a-4bb2-a2f3-56346e187940", None, True),
+            (None, "test_user_2", True),
+            ("789c1f21-2163-481b-8a24-6ac0dbc20183", "test_user_3", True),
+            ("5da1376b-b737-4d55-a362-e519fe374ef8", "test_user_3", True), # unexisted id but existed login
+            ("789c1f21-2163-481b-8a24-6ac0dbc20183", "test_user_9r9404303", True), # unexisted login but existed id
+            ("5da1376b-b737-4d55-a362-e519fe374ef8", None, False),
+            (None, "unexisted_user", False),
+            ("5da1376b-b737-4d55-a362-e519fe374ef8", "unexisted_user", False),
+        )
+    )
+    async def test_exists(self, id, login, is_exists, auth_repository: "AuthRepository"):
+        result = await auth_repository.exists(id=id, login=login)
+
+        assert result == is_exists
 
     @pytest.mark.parametrize(
         ("login", "password", "exception"),
