@@ -9,9 +9,17 @@ from testcontainers.postgres import PostgresContainer, DbContainer
 from src.main import app
 from src.models.auth import AuthCredentials
 from src.core.database import Base
+from src.logger import logger
 
 if TYPE_CHECKING:
     from src.core.database import AsyncDatabase
+
+
+@pytest.fixture(autouse=True)
+def disable_logging() -> Generator[None, None, None]:
+    logger.disable("src")
+    yield
+    logger.enable("src")
 
 
 @pytest.fixture(scope="session")
