@@ -1,0 +1,22 @@
+[
+    {   
+        "id": "32f706a8-871a-4bb2-a2f3-56346e187940",
+        "login": "test_user_1",
+        "password": "qwertyui1234"
+    },
+    {
+        "id": "76dee60c-a424-4267-a6af-763717f15131",
+        "login": "test_user_2",
+        "password": "1234"
+    },
+    {
+        "id": "789c1f21-2163-481b-8a24-6ac0dbc20183",
+        "login": "test_user_3",
+        "password": "password@@@"
+    },    
+    {
+        "id": "35560ca5-ea0a-40d0-8463-fdfc4e936fb5",
+        "login": "test_user_4",
+        "password": "password**72##$"
+    }
+]
