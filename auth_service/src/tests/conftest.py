@@ -75,7 +75,7 @@ async def tables(get_test_db: "AsyncDatabase") -> AsyncGenerator[None, None]:
 @pytest_asyncio.fixture(scope="session")
 async def insert_test_data(get_test_db: "AsyncDatabase", tables) -> None:
     async with get_test_db.get_session() as session:
-        with open("src/tests/repositories/test_db_data.json", "r") as file:
+        with open("src/tests/test_data/test_db_data.json", "r") as file:
             entities_orm = (AuthCredentials(**entity) for entity in json.load(file))
         session.add_all(entities_orm)
         await session.commit()
