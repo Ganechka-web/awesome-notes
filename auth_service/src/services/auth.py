@@ -52,55 +52,53 @@ class AuthService:
 
         return AuthCredentialsSchema.model_validate(credentials_orm)
 
-    async def register(self, credentials: AuthCredentialsRegisterSchema) -> str:
+    async def register(self, credentials: AuthCredentialsRegisterSchema) -> UUID:
         # check credentials existence
-        try:
-            _ = await self.repository.get_one_by_login(login=credentials.login)
+        if await self.repository.exists(login=credentials.login):
             raise AuthCredentialsAlreadyExistsError(
                 f"AuthCredentials with login - {credentials.login} already exists"
             )
-        except RowDoesNotExist:
-            # call the RPC client to get created user id
-            try:
-                data = json.dumps(credentials.user_data.model_dump()).encode()
-                response = await self.rpc_client.call(
-                    self.user_creation_queue_name, data
-                )
-                encoded_body = json.loads(response)
-            except (
-                UnableToConnectToBrokerError,
-                ReceivingResponseTimeOutError,
-            ) as e:
-                raise UnableToCreareAuthCredentials(
-                    "Unable to create AuthCredentials, error on the broker side"
-                ) from e
-
-            # check error on the user_service side
-            if encoded_body["error"] is not None:
-                encoded_body_error = json.loads(encoded_body["error"])
-                error_schema = UserServiceCreationErrorSchema(**encoded_body_error)
-                raise UserCreationException(
-                    msg="Unable to create AuthCredentials because of the invalid user_data",
-                    http_status_code=error_schema.http_status_code,
-                    msg_from_service=error_schema.message,
-                )
-
-            # creating and setting up password hash
-            password_hash = self.password_service.generate_password_hash(
-                credentials.password
+        # call the RPC client to get created user id
+        try:
+            data = json.dumps(credentials.user_data.model_dump()).encode()
+            response = await self.rpc_client.call(
+                self.user_creation_queue_name, data
             )
-            credentials.password = password_hash
+            encoded_body = json.loads(response)
+        except (
+            UnableToConnectToBrokerError,
+            ReceivingResponseTimeOutError,
+        ) as e:
+            raise UnableToCreareAuthCredentials(
+                "Unable to create AuthCredentials, error on the broker side"
+            ) from e
 
-            auth_credentials = AuthCredentials(
-                **credentials.model_dump(exclude="user_data")
-            )
-            # setting up the common id
-            auth_credentials.id = UUID(encoded_body["created_user_id"])
-            new_credentials_id = await self.repository.create_one(
-                credentials=auth_credentials
+        # check error on the user_service side
+        if encoded_body["error"] is not None:
+            encoded_body_error = json.loads(encoded_body["error"])
+            error_schema = UserServiceCreationErrorSchema(**encoded_body_error)
+            raise UserCreationException(
+                msg="Unable to create AuthCredentials because of the invalid user_data",
+                http_status_code=error_schema.http_status_code,
+                msg_from_service=error_schema.message,
             )
 
-            return new_credentials_id
+        # creating and setting up password hash
+        password_hash = self.password_service.generate_password_hash(
+            credentials.password
+        )
+        credentials.password = password_hash
+
+        auth_credentials = AuthCredentials(
+            **credentials.model_dump(exclude={"user_data",})
+        )
+        # setting up the common id
+        auth_credentials.id = UUID(encoded_body["created_user_id"])
+        new_credentials_id = await self.repository.create_one(
+            credentials=auth_credentials
+        )
+
+        return new_credentials_id
 
     async def login(self, credentials: AuthCredentialsLoginSchema) -> str:
         # check credentials existence

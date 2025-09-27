@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from core.settings import postgres_settings
-from core.database import Base
-from models.user import User # noqa
+from src.core.settings import postgres_settings
+from src.core.database import Base
+from src.models.user import User # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,7 +29,6 @@ postgres_dsn = URL.create(
     password=postgres_settings.password,
     database=postgres_settings.db,
 ).render_as_string(hide_password=False)
-print(postgres_dsn)
 
 config.set_main_option("sqlalchemy.url", postgres_dsn)
 

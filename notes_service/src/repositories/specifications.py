@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 
-from models.note import Note
+from src.models.note import Note
 
 
 class Specification(ABC):

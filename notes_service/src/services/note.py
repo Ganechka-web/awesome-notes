@@ -2,15 +2,15 @@ import markdown
 from uuid import UUID
 from typing import TYPE_CHECKING
 
-from repositories.specifications import NotesForOwnerSpecification
-from models.note import Note
-from schemas.note import NoteOutputShema, NoteCreateShema, NoteUpdateShema
-from services.validators import NoteTitleUniqueForOwnerValidator
-from exceptions.repository import NoSuchRowError
-from exceptions.service import NoteNotFoundError
+from src.repositories.specifications import NotesForOwnerSpecification
+from src.models.note import Note
+from src.schemas.note import NoteOutputShema, NoteCreateShema, NoteUpdateShema
+from src.services.validators import NoteTitleUniqueForOwnerValidator
+from src.exceptions.repository import NoSuchRowError
+from src.exceptions.service import NoteNotFoundError
 
 if TYPE_CHECKING:
-    from repositories.note import NoteRepository
+    from src.repositories.note import NoteRepository
 
 
 class NoteService:

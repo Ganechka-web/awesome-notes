@@ -1,9 +1,9 @@
 # Contains NoteService validators 
 from abc import ABC, abstractmethod
 
-from repositories.specifications import NotesForOwnerSpecification
-from repositories.note import NoteRepository
-from exceptions.service import NoteAlreadyExistsError
+from src.repositories.specifications import NotesForOwnerSpecification
+from src.repositories.note import NoteRepository
+from src.exceptions.service import NoteAlreadyExistsError
 
 
 class Validator(ABC):

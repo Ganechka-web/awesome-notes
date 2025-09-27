@@ -35,14 +35,15 @@ async def get_one_by_login(
     try:
         credentials = await auth_service.get_one_by_login(login=login)
     except AuthCredentialsNotFoundError:
-        return HTTPException(
+        raise HTTPException(
             status.HTTP_404_NOT_FOUND,
-            detail=f"AuthCredentials with {login=} does not exist"
+            detail=f"AuthCredentials with {login=} does not exist",
         )
 
     return credentials
 
-@auth_router.post("/register/")
+
+@auth_router.post("/register/", status_code=status.HTTP_201_CREATED)
 @inject
 async def register(
     credentials: AuthCredentialsRegisterSchema,

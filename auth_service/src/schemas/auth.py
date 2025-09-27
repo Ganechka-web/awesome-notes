@@ -30,7 +30,7 @@ class UserEventCreateSchema(UserEventSchema):
 
 
 class AuthCredentialsRegisterSchema(BaseModel):
-    login: str
+    login: str = Field(max_length=20)
     password: str
     user_data: UserEventSchema
 
@@ -39,7 +39,7 @@ class AuthCredentialsRegisterSchema(BaseModel):
 
 
 class AuthCredentialsLoginSchema(BaseModel):
-    login: str
+    login: str = Field(max_length=20)
     password: str
     
     class Config:

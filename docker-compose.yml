@@ -20,6 +20,17 @@ services:
         condition: service_healthy
       user-service-db:
         condition: service_started
+  
+  notes-service-http:
+    build: ./notes_service
+    container_name: notes_service_http
+    env_file: "notes_service/.env"
+    restart: always
+    depends_on:
+      awesome-notes-rabbitmq:
+        condition: service_healthy
+      notes-service-db:
+        condition: service_started
 
   user-service-db:
     image: postgres:latest

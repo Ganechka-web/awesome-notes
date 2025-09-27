@@ -4,9 +4,9 @@ from uuid import UUID
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy import select, delete
 
-from models.note import Note
-from exceptions.repository import DatabaseError, NoSuchRowError
-from repositories.specifications import Specification
+from src.models.note import Note
+from src.exceptions.repository import DatabaseError, NoSuchRowError
+from src.repositories.specifications import Specification
 
 if TYPE_CHECKING:
     from core.database import AsyncDatabase

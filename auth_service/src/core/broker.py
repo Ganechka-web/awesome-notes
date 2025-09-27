@@ -2,7 +2,7 @@ from functools import partial
 
 from aio_pika import connect, Message
 from aio_pika.exceptions import AMQPConnectionError
-from aio_pika.abc import AbstractConnection, AbstractChannel
+from aio_pika.abc import AbstractConnection, AbstractChannel, ConsumerTag
 
 from src.exceptions.broker import UnableToConnectToBrokerError
 from src.logger import logger
@@ -40,13 +40,15 @@ class AsyncBroker:
         if self._channel is None:
             await self._create_channel()
 
-    async def consume(self, queue_name: str, callback) -> None:
+    async def consume(self, queue_name: str, callback) -> ConsumerTag:
         await self.broker_set_up()
 
         logger.info(f"Starting consuming messages from {queue_name} queue...")
 
         queue = await self._channel.declare_queue(queue_name, durable=True)
-        await queue.consume(callback=partial(callback.handle, channel=self._channel))
+        return await queue.consume(
+            callback=partial(callback.handle, channel=self._channel)
+        )
 
     async def publish(self, queue_name: str, data: bytes, **message_kwargs) -> None:
         await self.broker_set_up()
