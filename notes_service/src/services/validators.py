@@ -1,4 +1,5 @@
 # Contains NoteService validators 
+import uuid
 from abc import ABC, abstractmethod
 
 from src.repositories.specifications import NotesForOwnerSpecification
@@ -14,7 +15,7 @@ class Validator(ABC):
 
 class NoteTitleUniqueForOwnerValidator(Validator):
     """Validates note title for owner"""
-    def __init__(self, repository: NoteRepository, owner_id: int) -> None:
+    def __init__(self, repository: NoteRepository, owner_id: uuid.UUID) -> None:
         self.notes_for_owner_spec = NotesForOwnerSpecification
         self.repository = repository
         self.owner_id = owner_id
