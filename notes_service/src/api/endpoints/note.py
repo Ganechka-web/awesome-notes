@@ -57,7 +57,7 @@ async def get_one_by_id(
     return note
 
 
-@notes_router.post("/create/")
+@notes_router.post("/create/", status_code=201)
 @inject
 async def create_one(
     new_note: NoteCreateShema,
@@ -88,11 +88,11 @@ async def update_one(
     except NoteAlreadyExistsError:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
-            detail=f"User already has got anote with title - {updated_note.title}",
+            detail=f"User already has got a note with title - {updated_note.title}",
         )
 
 
-@notes_router.delete("/delete/{note_id}")
+@notes_router.delete("/delete/{note_id}", status_code=204)
 @inject
 async def delete_one(
     note_id: Annotated[UUID, Path()],
@@ -104,7 +104,7 @@ async def delete_one(
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Note not found")
 
 
-@notes_router.delete("/delete/by-owner-id/{owner_id}")
+@notes_router.delete("/delete/by-owner-id/{owner_id}", status_code=204)
 @inject
 async def delete_all_by_owner_id(
     owner_id: Annotated[UUID, Path()],
