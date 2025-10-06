@@ -19,18 +19,13 @@ class AsyncDatabase:
             password=password,
             database=db,
         )
-        self.async_engine: AsyncEngine | None = None
+        self.async_engine: AsyncEngine = create_async_engine(
+            self.postgres_dcn, echo=True
+        )
         self.session: AsyncSession | None = None
-
-    def _create_async_engine(self) -> None:
-        if self.async_engine is None:
-            self.async_engine = create_async_engine(self.postgres_dcn, echo=True)
-            logger.info("Database is connected and ready to execute queries")
+        logger.info("Database is connected and ready to execute queries")
 
     def get_session(self) -> AsyncSession:
-        if self.async_engine is None:
-            self._create_async_engine()
-
         if self.session is None:
             self.session = AsyncSession(bind=self.async_engine)
         return self.session
