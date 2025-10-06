@@ -41,7 +41,7 @@ class NoteRepository:
             except NoResultFound as e:
                 raise NoSuchRowError(f"Unable to find row with id - {note_id}") from e
 
-    async def create_one(self, note: Note) -> int:
+    async def create_one(self, note: Note) -> UUID:
         async with self.db.get_session() as session:
             session.add(note)
 
