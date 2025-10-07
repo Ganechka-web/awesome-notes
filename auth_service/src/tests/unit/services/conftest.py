@@ -15,38 +15,25 @@ def password_service(container) -> "SecurityPasswordService":
 
 @pytest.fixture(scope="module")
 def mock_password_service(container) -> Generator[mock.Mock, None, None]:
-    origin_provider = container.password_service
     container.password_service.override(mock.Mock())
-
     yield container.password_service()
-
-    origin_provider.reset_override()
+    container.password_service.reset_override()
 
 
 @pytest.fixture(scope="module")
 def mock_auth_repository(container) -> Generator[mock.AsyncMock, None, None]:
-    origin_provider = container.auth_repository
     container.auth_repository.override(mock.AsyncMock())
-
     yield container.auth_repository()
-
-    origin_provider.reset_override()
+    container.auth_repository.reset_override()
 
 
 @pytest.fixture(scope="module")
 def mock_user_creation_rpc_client(container) -> Generator[mock.AsyncMock, None, None]:
-    origin_provider = container.user_creation_rpc_client
     container.user_creation_rpc_client.override(mock.AsyncMock())
-
     yield container.user_creation_rpc_client()
+    container.user_creation_rpc_client.reset_override()
 
-    origin_provider.reset_override()
 
-
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="module")
 def auth_service(container) -> "AuthService":
     return container.auth_service()
-
-
-
-

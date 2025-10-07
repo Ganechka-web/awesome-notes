@@ -1,4 +1,4 @@
-from uuid import uuid4
+import uuid
 from unittest import mock
 
 import pytest
@@ -16,12 +16,11 @@ from src.security.jwt import get_jwt_token, verify_jwt_token
         ("test_user_1", 200, None),
         ("unexisted_user", 404, AuthCredentialsNotFoundError("...")),
     ),
-    ids=["successfully getting credentials", "unexisted credentials"]
 )
 async def test_get_one_by_login(
     login, status_code, raised_exception, client, mock_auth_service
 ):
-    credentials = AuthCredentialsSchema(id=uuid4(), login=login, password="...")
+    credentials = AuthCredentialsSchema(id=uuid.uuid4(), login=login, password="...")
     mock_auth_service.get_one_by_login = mock.AsyncMock(
         side_effect=raised_exception or [credentials]
     )
@@ -131,16 +130,6 @@ async def test_get_one_by_login(
             ),
         ),
     ),
-    ids=(
-        "succes male gender",
-        "succes female gender",
-        "succes unknown gender",
-        "validation too long login",
-        "validation too long username",
-        "validation wrong gender",
-        "validation young age",
-        "error on user_service side",
-    ),
 )
 async def test_register(
     login,
@@ -158,7 +147,7 @@ async def test_register(
         "password": password,
         "user_data": {"username": username, "gender": gender, "age": age},
     }
-    created_credentials_id = uuid4()
+    created_credentials_id = uuid.uuid4()
 
     mock_auth_service.register = mock.AsyncMock(
         side_effect=raised_exception or [created_credentials_id]
@@ -200,7 +189,6 @@ async def test_register(
             AuthCredentialsNotFoundError("..."),
         ),
     ),
-    ids=("successfully logging", "wrong password", "unexisted login"),
 )
 async def test_login(
     login, password, status_code, raised_exception, client, mock_auth_service
