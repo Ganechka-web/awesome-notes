@@ -1,5 +1,5 @@
 import json
-from uuid import uuid4
+import uuid
 from typing import TYPE_CHECKING
 
 import pytest
@@ -16,11 +16,11 @@ if TYPE_CHECKING:
     ("data", "reply"),
     (
         (
-            {"some_data": "data"},
-            {"created_user_id": uuid4().hex, "error": None},
+            {"username": "test_username", "gender": "male", "age": 27},
+            {"created_user_id": uuid.uuid4().hex, "error": None},
         ),
         (
-            {"some_data_2": 234, "name": "some_name"},
+            {"username": "existed_username", "gender": "unknown", "age": 19},
             {
                 "created_user_id": None,
                 "error": {
@@ -39,7 +39,7 @@ async def test_user_creation_rpc_client(
     start_consuming_ucq,
     stop_consuming_ucq,
 ):
-    consumer_tag = await start_consuming_ucq(data=json.dumps(reply).encode())
+    consumer_tag = await start_consuming_ucq(reply_data=json.dumps(reply).encode())
 
     reply_data = await user_creation_rpc_client.call(
         queue_name=USER_CREATION_QUEUE_NAME,
@@ -63,5 +63,7 @@ async def test_user_creation_rpc_client_unreachable(
     with pytest.raises(UnableToConnectToBrokerError):
         await user_creation_rpc_client_with_unreachable_broker.call(
             queue_name=USER_CREATION_QUEUE_NAME,
-            data=json.dumps({"test_data": "..."}).encode(),
+            data=json.dumps(
+                {"username": "test_username", "gender": "female", "age": 46}
+            ).encode(),
         )

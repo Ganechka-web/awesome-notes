@@ -15,8 +15,11 @@ if TYPE_CHECKING:
     from src.broker.rpc_clients import UserCreationRPCClient
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def rabbitmq_container(container) -> Generator[RabbitMqContainer, None, None]:
+    """
+    Starts RabbitMQ test container in docker, sets new host and port in dependencies container
+    """
     rabbitmq_container = RabbitMqContainer(
         image="rabbitmq:4.1-management-alpine",
         port=5672,
@@ -53,19 +56,24 @@ def user_creation_rpc_client(container, auth_broker) -> "UserCreationRPCClient":
 
 
 @pytest.fixture(scope="function")
-def user_creation_rpc_client_with_unreachable_broker(container, rabbitmq_container):
+def user_creation_rpc_client_with_unreachable_broker(
+    container,
+) -> "UserCreationRPCClient":
     """Returns RPC with an unreachable broker via container"""
-    container.config.set(
-        "rabbitmq_settings.host", "unreachable"
-    )
+    container.config.set("rabbitmq_settings.host", "unreachable")
     container.reset_singletons()
-    yield container.user_creation_rpc_client()
+    return container.user_creation_rpc_client()
+
 
 class TestCallback:
-    __slots__ = ("data",)
+    """
+    TestCallback is a test callback for consuming messages and sending reply while testing
+    """
 
-    def __init__(self, data: bytes):
-        self.data = data
+    __slots__ = ("reply_data",)
+
+    def __init__(self, reply_data: bytes):
+        self.reply_data = reply_data
 
     async def handle(
         self, message: AbstractIncomingMessage, channel: AbstractChannel
@@ -73,7 +81,7 @@ class TestCallback:
         if message.reply_to:
             await channel.default_exchange.publish(
                 message=Message(
-                    body=self.data,
+                    body=self.reply_data,
                     correlation_id=message.correlation_id,
                 ),
                 routing_key=message.reply_to,
@@ -82,8 +90,13 @@ class TestCallback:
 
 @pytest_asyncio.fixture
 async def start_consuming_ucq(user_creation_rpc_client) -> Callable:
-    async def wrapper(data: bytes) -> ConsumerTag:
-        test_callback = TestCallback(data=data)
+    """
+    Starts consuming messages from USER_CREATION_QUEUE via TestCallback.
+    Returns consumer tag
+    """
+
+    async def wrapper(reply_data: bytes) -> ConsumerTag:
+        test_callback = TestCallback(reply_data=reply_data)
         consumer_tag = await user_creation_rpc_client.broker.consume(
             queue_name=USER_CREATION_QUEUE_NAME, callback=test_callback
         )
@@ -94,8 +107,14 @@ async def start_consuming_ucq(user_creation_rpc_client) -> Callable:
 
 @pytest_asyncio.fixture
 async def stop_consuming_ucq(user_creation_rpc_client) -> Callable:
+    """
+    Stops consuming mesages from USER_CREATION_QUEUE according consumer tag
+    """
+
     async def wrapper(consumer_tag: ConsumerTag) -> None:
-        queue = await user_creation_rpc_client.broker._channel.get_queue(USER_CREATION_QUEUE_NAME)
+        queue = await user_creation_rpc_client.broker._channel.get_queue(
+            USER_CREATION_QUEUE_NAME
+        )
         await queue.cancel(consumer_tag)
 
     return wrapper
