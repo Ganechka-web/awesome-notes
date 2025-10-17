@@ -18,6 +18,10 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="session", autouse=True)
 def postgres_container(container) -> Generator[DbContainer, None, None]:
+    """
+    Starts PostgreSQL test container in docker, sets new host and port in dependencies container.
+    Yields working container and stops it.
+    """
     postgres_cont = PostgresContainer(
         image="postgres:latest",
         port=postgres_settings.port,
@@ -41,6 +45,11 @@ def postgres_container(container) -> Generator[DbContainer, None, None]:
 
 @pytest_asyncio.fixture(loop_scope="session")
 async def prepare_test_database(container) -> AsyncGenerator["AsyncDatabase", None]:
+    """
+    Creates AsyncDatabase test instance and creates all tables.
+    Yields db instance, drops tables and shutdown it.
+    """
+
     test_db = container.note_database()
 
     async with test_db.async_engine.begin() as conn:
@@ -62,14 +71,18 @@ def note_repository(container, prepare_test_database) -> "NoteRepository":
 
 @pytest.fixture
 def expected_data_with() -> Callable:
+    """
+    Generate test AuthCredentials instances and their`s attrs according to id, login and amount.
+    """
+
     @functools.lru_cache()
     def wrapper(
         id: uuid.UUID | None = None, owner_id: uuid.UUID | None = None, amount: int = 1
     ) -> tuple[list[dict], list[Note]]:
         """
-        Returns two lists: 
-         - expected_data: bare dicts with Note instances`s attrs 
-         - expected_data_on_insert: contains Note ORM instances 
+        Returns two lists:
+         - expected_data: bare dicts with Note instances`s attrs
+         - expected_data_on_insert: contains Note ORM instances
         """
         expected_data = []
         expected_data_on_insert = []
@@ -104,6 +117,7 @@ def expected_data_with() -> Callable:
 
 @pytest.fixture
 def insert_test_data(prepare_test_database) -> Callable:
+    """Inserts test data to the test database"""
     async def wrapper(data: list[Note]) -> None:
         async with prepare_test_database.get_session() as session:
             session.add_all(data)
