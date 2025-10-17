@@ -69,12 +69,17 @@ def auth_repository(container, prepare_test_database) -> "AuthRepository":
 @pytest.fixture
 def expected_data_with() -> Callable:
     """
-    Generate test AuthCredentials instances and their`s attrs according id, login and amount.
+    Generate test AuthCredentials instances and their`s attrs according to id, login and amount.
     """
 
     def wrapper(
         id: uuid.UUID | None = None, login: str | None = None, amount: int = 1
     ) -> tuple[list[AuthCredentials], list[dict]]:
+        """
+        Returns two lists:
+         - expected_data: bare dicts with Note instances`s attrs
+         - expected_data_on_insert: contains Note ORM instances
+        """
         expected_data_orm = []
         expected_data_attrs = []
 
