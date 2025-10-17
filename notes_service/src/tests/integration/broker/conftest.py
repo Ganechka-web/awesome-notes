@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Generator, AsyncGenerator, Callable
 import pytest
 import pytest_asyncio
 from testcontainers.rabbitmq import RabbitMqContainer
-from dependency_injector import providers
 
 from src.core.settings import rabbitmq_settings, DELETE_NOTES_QUEUE_NAME
 from src.broker.callbacks import DeleteAllUserNotesCallback
@@ -17,6 +16,9 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="session")
 def rabbitmq_container(container) -> Generator[RabbitMqContainer, None, None]:
+    """
+    Starts RabbitMQ test container in docker, sets new host and port in dependencies container
+    """
     rabbitmq_cont = RabbitMqContainer(
         image="rabbitmq:4.1-management-alpine",
         port=rabbitmq_settings.port,
@@ -49,6 +51,7 @@ async def note_broker(
 
 @pytest_asyncio.fixture(scope="function")
 async def unrteachable_broker(container) -> AsyncGenerator["AsyncBroker", None]: 
+    """Sets unexists host to broker config and reset it"""
     container.config.set(
         "rabbitmq_settings.host", "unreachable"
     )
@@ -73,6 +76,7 @@ def delete_all_user_notes_callback(container) -> "DeleteAllUserNotesCallback":
 
 @pytest_asyncio.fixture
 async def publish_message_in_delete_notes_queue(note_broker) -> Callable:
+    """Publishes message in DELETE_NOTES_QUEUE with user_id as a data"""
     async def wrapper(user_id: uuid.UUID) -> None:
         await note_broker.publish(
             data=json.dumps({"user_id": user_id.hex}).encode(encoding="utf-8"),
