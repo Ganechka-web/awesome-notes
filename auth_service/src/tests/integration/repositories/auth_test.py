@@ -1,15 +1,11 @@
+import uuid
 from typing import TYPE_CHECKING
-from uuid import UUID
-from contextlib import nullcontext as does_not_raise
-from unittest import mock
 
 import pytest
 
-from src.models.auth import AuthCredentials
 from src.exceptions.repositories import (
     RowDoesNotExist,
     RowAlreadyExists,
-    ColumnContentTooLongError,
 )
 
 if TYPE_CHECKING:
@@ -18,98 +14,106 @@ if TYPE_CHECKING:
 
 class TestAuthRepository:
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        ("login", "expected_login", "exception"),
-        (
-            ("test_user_1", "test_user_1", does_not_raise()),
-            ("test_user_2", "test_user_2", does_not_raise()),
-            ("test_unexistent_user", None, pytest.raises(RowDoesNotExist)),
-        ),
-    )
     async def test_get_one_by_login(
-        self, login, expected_login, exception, auth_repository: "AuthRepository"
+        self, expected_data_with, insert_test_data, auth_repository: "AuthRepository"
     ):
-        with exception:
-            credentials = await auth_repository.get_one_by_login(login=login)
+        expected_credentials_orm, expected_credentials_attrs = expected_data_with(
+            login="some_expected_login"
+        )
+        await insert_test_data(expected_credentials_orm)
 
-            assert credentials.login == expected_login
-        
+        credentials = await auth_repository.get_one_by_login(
+            login=expected_credentials_attrs[0]["login"]
+        )
+
+        assert credentials.login == expected_credentials_attrs[0]["login"]
+
+    @pytest.mark.asyncio
+    async def test_get_one_by_login_unexists(self, auth_repository: "AuthRepository"):
+        unexisted_login = "some_unexisted_login"
+
+        with pytest.raises(RowDoesNotExist):
+            await auth_repository.get_one_by_login(login=unexisted_login)
+
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         ("id", "login", "is_exists"),
         (
-            ("32f706a8-871a-4bb2-a2f3-56346e187940", None, True),
-            (None, "test_user_2", True),
-            ("789c1f21-2163-481b-8a24-6ac0dbc20183", "test_user_3", True),
-            (
-                "5da1376b-b737-4d55-a362-e519fe374ef8",
-                "test_user_3",
-                True,
-            ),  # unexisted id but existed login
-            (
-                "789c1f21-2163-481b-8a24-6ac0dbc20183",
-                "test_user_9r9404303",
-                True,
-            ),  # unexisted login but existed id
-            ("5da1376b-b737-4d55-a362-e519fe374ef8", None, False),
-            (None, "unexisted_user", False),
-            ("5da1376b-b737-4d55-a362-e519fe374ef8", "unexisted_user", False),
+            (uuid.uuid4(), "some_login", True),
+            (uuid.uuid4(), None, True),
+            (None, "existed_login", True),
         ),
     )
-    async def test_exists(self, id, login, is_exists, auth_repository: "AuthRepository"):
+    async def test_exists(
+        self,
+        id,
+        login,
+        is_exists,
+        expected_data_with,
+        insert_test_data,
+        auth_repository: "AuthRepository",
+    ):
+        exp_credentials_orm, _ = expected_data_with(id=id, login=login, amount=1)
+        await insert_test_data(exp_credentials_orm)
+
         result = await auth_repository.exists(id=id, login=login)
 
         assert result == is_exists
-        
+
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        ("login", "password", "exception"),
+        ("id", "login", "is_exists"),
         (
-            ("creation_test_1", "some@password@hash", does_not_raise()),
-            ("creation_log_test_1", "some@password@hash", does_not_raise()),
-            (
-                "creation_too_long_login_test_2",
-                "1233@klxmk@",
-                pytest.raises(ColumnContentTooLongError),
-            ),
-            ("creation_test_1", "jj22k2kk", pytest.raises(RowAlreadyExists)),
+            (uuid.uuid4(), "some_login", False),
+            (uuid.uuid4(), None, False),
+            (None, "existed_login", False),
         ),
     )
-    async def test_create_one(
-        self, login, password, exception, auth_repository: "AuthRepository"
+    async def test_exists_unexists(
+        self, id, login, is_exists, auth_repository: "AuthRepository"
     ):
-        with exception:
-            auth_credentials = AuthCredentials(login=login, password=password)
-            auth_credentials_id = await auth_repository.create_one(
-                credentials=auth_credentials
-            )
-            created_auth_credentials = await auth_repository.get_one_by_login(
-                login=login
-            )
+        result = await auth_repository.exists(id=id, login=login)
 
-            assert isinstance(auth_credentials_id, UUID) is True
-            assert login == created_auth_credentials.login
-            assert password == created_auth_credentials.password
+        assert result == is_exists
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize(
-        ("login", "exception"),
-        (("test_user_1", does_not_raise()), ("test_user_2", does_not_raise())),
-    )
-    async def test_delete_one(
-        self, login, exception, auth_repository: "AuthRepository"
+    async def test_create_one_success(
+        self, expected_data_with, auth_repository: "AuthRepository"
     ):
-        with exception:
-            auth_credentials_on_delete = await auth_repository.get_one_by_login(
-                login=login
+        exp_credentials_orm, exp_credentials_attrs = expected_data_with(amount=1)
+
+        new_credentials_id = await auth_repository.create_one(
+            credentials=exp_credentials_orm[0]
+        )
+        assert isinstance(new_credentials_id, uuid.UUID)
+
+        created_credentials = await auth_repository.get_one_by_login(
+            login=exp_credentials_attrs[0]["login"]
+        )
+        assert created_credentials.login == exp_credentials_attrs[0]["login"]
+        assert created_credentials.password == exp_credentials_attrs[0]["password"]
+
+    @pytest.mark.asyncio
+    async def test_create_one_already_exists(
+        self, expected_data_with, insert_test_data, auth_repository: "AuthRepository"
+    ):
+        exp_credentials_orm, _ = expected_data_with(amount=1)
+        await insert_test_data(exp_credentials_orm)
+        same_exp_credentials_orm, _ = expected_data_with(amount=1)
+
+        with pytest.raises(RowAlreadyExists):
+            await auth_repository.create_one(credentials=same_exp_credentials_orm[0])
+
+    @pytest.mark.asyncio
+    async def test_delete_one_success(
+        self, expected_data_with, insert_test_data, auth_repository: "AuthRepository"
+    ):
+        exp_credentials_orm, exp_credentials_attrs = expected_data_with(amount=1)
+        await insert_test_data(exp_credentials_orm)
+
+        await auth_repository.delete_one(exp_credentials_orm[0])
+
+        with pytest.raises(RowDoesNotExist):
+            _ = await auth_repository.get_one_by_login(
+                login=exp_credentials_attrs[0]["login"]
             )
-
-            auth_repository.db.session.delete = mock.AsyncMock()
-            auth_repository.db.session.commit = mock.AsyncMock()
-
-            await auth_repository.delete_one(credentials=auth_credentials_on_delete)
-
-            auth_repository.db.session.delete.assert_awaited_once_with(
-                auth_credentials_on_delete
-            )
-            auth_repository.db.session.commit.assert_awaited_once()

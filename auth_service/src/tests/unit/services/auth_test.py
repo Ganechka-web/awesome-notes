@@ -1,8 +1,8 @@
 import json
+import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 from unittest import mock
-from uuid import UUID, uuid4
 from contextlib import nullcontext as does_not_raise
 
 import pytest
@@ -85,7 +85,7 @@ class TestAuthService:
             login=login, password=bare_password, user_data=user_event_data
         )
         input_rpc_client_data = json.dumps(user_event_data.model_dump()).encode()
-        output_rpc_data_data_id = uuid4().hex
+        output_rpc_data_data_id = uuid.uuid4().hex
         output_rpc_data_data = {
             "created_user_id": output_rpc_data_data_id,
             "error": None,
@@ -93,7 +93,7 @@ class TestAuthService:
 
         mock_auth_repository.exists = mock.AsyncMock(return_value=is_exists)
         mock_auth_repository.create_one = mock.AsyncMock(
-            return_value=UUID(hex=output_rpc_data_data_id)
+            return_value=uuid.UUID(hex=output_rpc_data_data_id)
         )
         # rpc_client mocking
         mock_user_creation_rpc_client.call = mock.AsyncMock(

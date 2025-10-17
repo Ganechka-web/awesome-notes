@@ -1,11 +1,11 @@
+import uuid 
 from typing import TYPE_CHECKING
-from uuid import UUID
 
-from sqlalchemy.exc import NoResultFound, IntegrityError, DBAPIError
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy import select, exists, or_
 
 from src.models.auth import AuthCredentials
-from src.exceptions.repositories import RowDoesNotExist, RowAlreadyExists, ColumnContentTooLongError
+from src.exceptions.repositories import RowDoesNotExist, RowAlreadyExists
 
 if TYPE_CHECKING:
     from src.core.database import AsyncDatabase
@@ -29,7 +29,7 @@ class AuthRepository:
                 raise RowDoesNotExist(f"Unable to find row with {login=}") from e
             return credentials
         
-    async def exists(self, id: UUID | None = None, login: str | None = None) -> bool:
+    async def exists(self, id: uuid.UUID | None = None, login: str | None = None) -> bool:
         async with self.db.get_session() as session:
             if not any([id, login]):
                 return False
@@ -47,7 +47,7 @@ class AuthRepository:
 
             return bool(result.scalar())
 
-    async def create_one(self, credentials: AuthCredentials) -> UUID:
+    async def create_one(self, credentials: AuthCredentials) -> uuid.UUID:
         async with self.db.get_session() as session:
             session.add(credentials)
             try:
@@ -57,10 +57,6 @@ class AuthRepository:
             except IntegrityError as e:
                 raise RowAlreadyExists(
                     f"Row with login - {credentials.login} already exists"
-                ) from e
-            except DBAPIError as e:
-                raise ColumnContentTooLongError(
-                    f"Column login - {credentials.login} too long"
                 ) from e
 
             return new_credentials_id

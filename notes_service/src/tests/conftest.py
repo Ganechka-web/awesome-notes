@@ -3,12 +3,13 @@ from typing import Generator
 import pytest
 from fastapi.testclient import TestClient
 
-from src.main import app
 from src.logger import logger
+from src.main import app
+from src.container import Container
 
 
 @pytest.fixture(autouse=True)
-def disable_logging() -> Generator[None, None, None]:
+def disable_logger() -> Generator:
     logger.disable("src")
     yield
     logger.enable("src")
@@ -16,10 +17,9 @@ def disable_logging() -> Generator[None, None, None]:
 
 @pytest.fixture(scope="session")
 def client() -> TestClient:
-    return TestClient(app=app)
+    return TestClient(app)
 
 
 @pytest.fixture(scope="session")
-def container(client):
-    """Returns dependencies container"""
+def container(client) -> Container:
     return client.app.container

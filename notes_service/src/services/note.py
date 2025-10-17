@@ -1,6 +1,7 @@
-import markdown
 from uuid import UUID
 from typing import TYPE_CHECKING
+
+import markdown
 
 from src.repositories.specifications import NotesForOwnerSpecification
 from src.models.note import Note

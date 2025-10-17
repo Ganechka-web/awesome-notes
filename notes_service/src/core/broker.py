@@ -36,7 +36,9 @@ class AsyncBroker:
     async def _create_channel(self) -> None:
         self._channel = await self._connection.channel()
 
-    async def consume(self, queue_name: str, callback: "BaseCallback") -> None:
+    async def consume(
+        self, queue_name: str, callback: "BaseCallback", **queue_kwargs
+    ) -> None:
         if self._connection is None:
             await self._create_amqp_connection()
         if self._channel is None:
@@ -44,17 +46,21 @@ class AsyncBroker:
 
         logger.info(f"Starting consuming messages from {queue_name} queue...")
 
-        queue = await self._channel.declare_queue(name=queue_name, durable=True)
+        queue = await self._channel.declare_queue(
+            name=queue_name, durable=True, **queue_kwargs
+        )
         await queue.consume(callback.handle)
 
-    async def publish(self, queue_name: str, data: bytes) -> None:
+    async def publish(self, queue_name: str, data: bytes, **queue_kwargs) -> None:
         if self._connection is None:
             await self._create_amqp_connection()
         if self._channel is None:
             await self._create_channel()
 
-        queue = await self._channel.declare_queue(name=queue_name)
-        await queue._channel.default_exchange.publish(Message(data))
+        queue = await self._channel.declare_queue(name=queue_name, **queue_kwargs)
+        await queue.channel.default_exchange.publish(
+            Message(data), routing_key=queue_name
+        )
 
     async def shutdown(self) -> None:
         if self._channel and not self._channel.is_closed:
