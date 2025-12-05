@@ -1,5 +1,5 @@
+import uuid
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Path, Depends, HTTPException, status
 from dependency_injector.wiring import Provide, inject
@@ -8,7 +8,7 @@ from src.container import Container
 from src.exceptions.broker import UnableToConnectToBrokerError
 from src.exceptions.services import UserNotFoundError, UserAlreadyExistsError
 from src.services.user import UserService
-from src.shemas.user import UserOutputShema, UserUpgrateShema
+from src.shemas.user import UserOutputShema, UserUpgrateShema, UserCreateShema
 
 
 users_router = APIRouter()
@@ -27,7 +27,7 @@ async def get_all(
 @users_router.get("/by-id/{user_id}")
 @inject
 async def get_one_by_id(
-    user_id: Annotated[UUID, Path()],
+    user_id: Annotated[uuid.UUID, Path()],
     user_service: UserService = Depends(Provide[Container.user_service]),
 ) -> UserOutputShema:
     try:
@@ -52,15 +52,32 @@ async def get_one_by_username(
     return user
 
 
+@users_router.post("/create/", status_code=status.HTTP_201_CREATED)
+@inject
+async def create_one(
+    new_user: UserCreateShema,
+    user_service: UserService = Depends(Provide[Container.user_service]),
+) -> uuid.UUID:
+    try:
+        new_user_id = await user_service.create_one(new_user=new_user)
+    except UserAlreadyExistsError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"User with username - {new_user.username} already exists",
+        )
+
+    return new_user_id
+
+
 @users_router.patch("/update/{user_id}")
 @inject
 async def update_one(
-    user_id: Annotated[UUID, Path()],
+    user_id: Annotated[uuid.UUID, Path()],
     updated_user: UserUpgrateShema,
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
     try:
-        await user_service.update_one(user_id=user_id, updated_user=updated_user)
+        await user_service.update_one(id=user_id, updated_user=updated_user)
     except UserAlreadyExistsError:
         raise HTTPException(
             status.HTTP_409_CONFLICT, detail="User with this username - already exists"
@@ -69,14 +86,14 @@ async def update_one(
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
 
 
-@users_router.delete("/delete/{user_id}")
+@users_router.delete("/delete/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 @inject
 async def delete_one(
-    user_id: Annotated[UUID, Path()],
+    user_id: Annotated[uuid.UUID, Path()],
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
     try:
-        await user_service.delete_one(user_id=user_id)
+        await user_service.delete_one(id=user_id)
     except UserNotFoundError:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
     except UnableToConnectToBrokerError:
