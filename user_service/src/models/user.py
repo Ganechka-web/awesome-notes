@@ -1,15 +1,12 @@
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from sqlalchemy.orm import mapped_column, Mapped
-from sqlalchemy import String, text, SmallInteger
+from sqlalchemy import FetchedValue, String, SmallInteger, DateTime
 from sqlalchemy import UUID as SQL_UUID
 
 from src.core.database import Base
-
-
-SQL_TIMEZONE_NOW = text("TIMEZONE('utc', now())")
 
 
 class Gender(Enum):
@@ -26,7 +23,13 @@ class User(Base):
     gender: Mapped[Gender] = mapped_column(default=Gender.unknown)
     age: Mapped[int] = mapped_column(SmallInteger)
 
-    joined_at: Mapped[datetime] = mapped_column(server_default=SQL_TIMEZONE_NOW)
+    joined_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.now(timezone.utc), server_default=FetchedValue()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=SQL_TIMEZONE_NOW, onupdate=SQL_TIMEZONE_NOW
+        DateTime(timezone=True),
+        default=datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        server_default=FetchedValue(),
+        server_onupdate=FetchedValue(),
     )
