@@ -26,7 +26,7 @@ class UserRepository:
                 users = await session.scalars(query)
 
                 return users.all()
-            
+
             except SQLAlchemyError as e:
                 await session.rollback()
                 logger.warning(
@@ -52,14 +52,14 @@ class UserRepository:
                 )
                 raise DataBaseError("...")
 
-    async def get_one_by_username(self, username: str) -> User | None:
+    async def get_one_by_username(self, username: str) -> User:
         async with self.db.get_session() as session:
             try:
                 query = select(self.model).where(self.model.username == username)
                 user = await session.execute(query)
 
                 return user.scalar_one()
-            
+
             except NoResultFound as e:
                 raise NoSuchRowError(f"No such row with  username - {username}") from e
             except SQLAlchemyError as e:
@@ -86,7 +86,9 @@ class UserRepository:
                                 clause
                                 for clause in (
                                     (self.model.id == id) if id else None,
-                                    (self.model.username == username) if username else None,
+                                    (self.model.username == username)
+                                    if username
+                                    else None,
                                 )
                                 if clause is not None
                             ],
@@ -107,15 +109,14 @@ class UserRepository:
         async with self.db.get_session() as session:
             try:
                 session.add(user)
-                await session.flush()
-                new_user_id = user.id
                 await session.commit()
+                await session.refresh(user)
 
-                return new_user_id
+                return user.id
 
             except IntegrityError as e:
                 await session.rollback()
-                if e.orig == UniqueViolationError:
+                if isinstance(e.orig.__cause__, UniqueViolationError):
                     logger.warning(f"Unable to save row detail - {e.detail}")
                     raise RowAlreadyExists("Row with same fields already exists")
                 else:
@@ -132,7 +133,7 @@ class UserRepository:
                 await session.commit()
             except IntegrityError as e:
                 await session.rollback()
-                if e.orig == UniqueViolationError:
+                if isinstance(e.orig.__cause__, UniqueViolationError):
                     logger.warning(f"Unable to save row detail - {e.detail}")
                     raise RowAlreadyExists("Row with same fields already exists")
                 else:
