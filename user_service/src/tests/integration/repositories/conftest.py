@@ -23,6 +23,7 @@ def postgres_container(container) -> Generator[PostgresContainer, None, None]:
     """
     postgres_cont = PostgresContainer(
         image="postgres:latest",
+        driver="asyncpg",
         port=postgres_settings.port,
         username=postgres_settings.user,
         password=postgres_settings.password,
@@ -31,21 +32,21 @@ def postgres_container(container) -> Generator[PostgresContainer, None, None]:
     postgres_cont.start()
 
     container.config.set(
-        "postgres_settings.host", postgres_cont.get_container_host_ip()
+        "postgres_settings.host", postgres_cont.get_container_host_ip(),
     )
     container.config.set(
         "postgres_settings.port",
         postgres_cont.get_exposed_port(port=postgres_settings.port),
     )
+    container.reset_singletons()
+
     yield postgres_cont
 
     postgres_cont.stop()
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
-async def prepare_database(
-    container
-) -> AsyncGenerator[AsyncDatabase, None]:
+async def prepare_database(container) -> AsyncGenerator[AsyncDatabase, None]:
     """
     Prepares AsyncData to work, creates instance and tables.
     Drops tables and shutdown db at the end
