@@ -44,13 +44,13 @@ class AsyncBroker:
         queue = await self._channel.declare_queue(queue_name, durable=True)
         await queue.consume(callback=partial(callback.handle, channel=self._channel))
 
-    async def publish(self, queue_name: str, data: bytes) -> None:
+    async def publish(self, queue_name: str, data: bytes, **message_kwargs) -> None:
         if self._connection is None:
             await self._create_amqp_connection()
         if self._channel is None:
             await self._create_channel()
 
-        message = Message(data)
+        message = Message(data, **message_kwargs)
         queue = await self._channel.declare_queue(queue_name, durable=True)
         await queue.channel.default_exchange.publish(
             message=message, routing_key=queue_name
