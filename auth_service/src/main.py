@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from src.container import Container
-from src.core.settings import USER_CREATION_QUEUE_NAME, postgres_settings, rabbitmq_settings
+from src.core.settings import USER_CREATION_QUEUE_NAME, postgres_settings, rabbitmq_settings, redis_settings
 from src.api.v1.auth import auth_router
 
 
@@ -13,6 +13,7 @@ async def lifespan(app: FastAPI):
     yield
     await app.container.auth_broker().shutdown()
     await app.container.auth_database().shutdown()
+    await app.container.auth_redis().shutdown()
 
 
 def create_app() -> FastAPI:
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
         {
             "postgres_settings": postgres_settings.model_dump(),
             "rabbitmq_settings": rabbitmq_settings.model_dump(),
+            "redis_settings": redis_settings.model_dump(),
             "queue_names": {"user_creation_queue_name": USER_CREATION_QUEUE_NAME},
         }
     )
