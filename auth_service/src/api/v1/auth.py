@@ -1,7 +1,7 @@
 from uuid import UUID
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import APIRouter, HTTPException, Response, Depends, Path, status
+from fastapi import APIRouter, HTTPException, Response, Depends, Path, Cookie, status
 from dependency_injector.wiring import Provide, inject
 
 from src.schemas.auth import (
@@ -14,6 +14,7 @@ from src.exceptions.services import (
     AuthCredentialsAlreadyExistsError,
     AuthCredentialsNotFoundError,
     PasswordsDidNotMatch,
+    InvalidTokenError,
     UnableToCreareAuthCredentials,
 )
 from src.container import Container
@@ -88,6 +89,33 @@ async def login(
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, detail="Password did not match"
         )
-    response.set_cookie("access_token", access_token)
+    response.set_cookie("access_token", access_token, secure=True, httponly=True)
 
     return access_token
+
+
+@auth_router.get("/verify-token/")
+@inject
+async def verify_token(
+    response: Response,
+    access_token: str | None = Cookie(
+        None,
+        description="Auth access token",
+    ),
+    auth_service: "AuthService" = Depends(Provide[Container.auth_service]),
+) -> str:
+    if access_token:
+        try:
+            access_token = await auth_service.check_accessability(access_token)
+        except InvalidTokenError:
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED, detail="Token is invalid, log-in again"
+            )
+
+        response.set_cookie("access_token", access_token, secure=True, httponly=True)
+
+        return access_token
+    raise HTTPException(
+        status.HTTP_401_UNAUTHORIZED,
+        detail="You should log-in before enter, request - '/auth/login/'",
+    )
