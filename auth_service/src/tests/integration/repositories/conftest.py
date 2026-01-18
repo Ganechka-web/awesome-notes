@@ -1,17 +1,21 @@
 import uuid
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generator
+import os
+from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generator, Any
 
+import jwt
 import pytest
 import pytest_asyncio
 from testcontainers.postgres import PostgresContainer
+from testcontainers.redis import RedisContainer
 
 from src.models.auth import AuthCredentials
-from src.core.settings import postgres_settings
+from src.core.settings import postgres_settings, redis_settings, SECRET_KEY, ALGORITHM
 from src.core.database import Base
 
 if TYPE_CHECKING:
     from src.core.database import AsyncDatabase
-    from src.repositories.auth import AuthRepository
+    from src.core.redis import AsyncRedis
+    from src.repositories.auth import AuthRepository, RedisTokenRepository
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -40,7 +44,7 @@ def postgres_container(container) -> Generator[PostgresContainer, None, None]:
     postgres_cont.stop()
 
 
-@pytest_asyncio.fixture(loop_scope="session")
+@pytest_asyncio.fixture(scope="function", loop_scope="session", autouse=True)
 async def prepare_test_database(container) -> AsyncGenerator["AsyncDatabase", None]:
     """
     Creates AsyncDatabase test instance and creates all tables.
@@ -62,7 +66,7 @@ async def prepare_test_database(container) -> AsyncGenerator["AsyncDatabase", No
 
 
 @pytest.fixture(scope="function")
-def auth_repository(container, prepare_test_database) -> "AuthRepository":
+def auth_repository(container) -> "AuthRepository":
     return container.auth_repository()
 
 
@@ -118,3 +122,60 @@ def insert_test_data(prepare_test_database) -> Callable:
             await session.commit()
 
     return wrapper
+
+
+@pytest.fixture(scope="session", autouse=True)
+def redis_container(container) -> Generator[RedisContainer, None, None]:
+    redis_cont = RedisContainer(
+        image="redis:8-alpine", port=6379
+    )
+    redis_cont.start()
+
+    # setting up custom redis env configuration 
+    container.config.set("redis_settings.host", redis_cont.get_container_host_ip())
+    container.config.set("redis_settings.port", redis_cont.get_exposed_port(6379))
+    container.config.set("redis_settings.user", "default")
+    container.config.set("redis_settings.password", "default")
+    container.reset_singletons()
+
+    yield redis_cont
+
+    redis_cont.stop()
+
+
+@pytest_asyncio.fixture(loop_scope="session", autouse=True)
+async def prepared_redis(container) -> AsyncGenerator["AsyncRedis", None]:
+    redis_connection: "AsyncRedis" = container.auth_redis()
+    await redis_connection.r.config_set("appendonly", "no")
+    await redis_connection.r.flushall(asynchronous=True)
+    await redis_connection.r.config_set("appendonly", "yes")
+    yield redis_connection
+    await redis_connection.r.config_set("appendonly", "no")
+    await redis_connection.r.flushall(asynchronous=True)
+    await redis_connection.r.config_set("appendonly", "yes")
+    await redis_connection.shutdown()
+
+
+@pytest.fixture(scope="function")
+def redis_token_repository(container) -> "RedisTokenRepository":
+    return container.redis_token_repository()
+
+
+@pytest.fixture
+def encode_test_token() -> Callable:
+    """Encodes jwt token with payload"""
+
+    def inner(payload: dict[str, Any]) -> str:
+        return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    return inner
+
+
+@pytest.fixture
+def decode_test_token() -> Callable:
+    """Decodes jwt token and returns payload"""
+
+    def inner(token) -> dict[str, Any]:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+    return inner
