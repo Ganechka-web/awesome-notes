@@ -2,11 +2,15 @@ import uuid
 from unittest import mock
 
 import pytest
+from fastapi.testclient import TestClient
 
 from src.schemas.auth import AuthCredentialsSchema, AuthCredentialsLoginSchema
 from src.exceptions.integration import UserCreationException
-from src.exceptions.services import AuthCredentialsNotFoundError, PasswordsDidNotMatch
-from src.security.jwt import get_jwt_token, verify_jwt_token
+from src.exceptions.services import (
+    AuthCredentialsNotFoundError,
+    PasswordsDidNotMatch,
+    InvalidTokenError,
+)
 
 
 @pytest.mark.asyncio
@@ -18,7 +22,11 @@ from src.security.jwt import get_jwt_token, verify_jwt_token
     ),
 )
 async def test_get_one_by_login(
-    login, status_code, raised_exception, client, mock_auth_service
+    login: str,
+    status_code: int,
+    raised_exception: Exception,
+    client: TestClient,
+    mock_auth_service: mock.AsyncMock,
 ):
     credentials = AuthCredentialsSchema(id=uuid.uuid4(), login=login, password="...")
     mock_auth_service.get_one_by_login = mock.AsyncMock(
@@ -132,15 +140,15 @@ async def test_get_one_by_login(
     ),
 )
 async def test_register(
-    login,
-    password,
-    username,
-    gender,
-    age,
-    status_code,
-    raised_exception,
-    client,
-    mock_auth_service,
+    login: str,
+    password: str,
+    username: str,
+    gender: str,
+    age: int,
+    status_code: int,
+    raised_exception: Exception,
+    client: TestClient,
+    mock_auth_service: mock.AsyncMock,
 ):
     register_data = {
         "login": login,
@@ -191,15 +199,20 @@ async def test_register(
     ),
 )
 async def test_login(
-    login, password, status_code, raised_exception, client, mock_auth_service
+    login: str,
+    password: str,
+    status_code: int,
+    raised_exception: Exception,
+    client: TestClient,
+    mock_auth_service: mock.AsyncMock,
 ):
     credentials_login_schema = AuthCredentialsLoginSchema(
         login=login, password=password
     )
-    acces_token = get_jwt_token(login)
+    access_token = "cunewiocw478n_2-dkjjdlsjkclskd"
 
     mock_auth_service.login = mock.AsyncMock(
-        side_effect=raised_exception or [acces_token]
+        side_effect=raised_exception or [access_token]
     )
 
     response = client.post("/auth/login/", json=credentials_login_schema.model_dump())
@@ -212,7 +225,35 @@ async def test_login(
     assert call_param_credentials.password == password
 
     if not raised_exception:
-        token_payload = verify_jwt_token(response.json())
-        assert token_payload["sub"] == login
-    else:
-        assert "detail" in response.json()
+        assert response.json() == access_token
+
+
+@pytest.mark.asyncio
+async def test_verify_token(mock_auth_service: mock.AsyncMock, client: TestClient):
+    access_token = "cunewiocw478n_2-dkjjdlsjkclskd"
+    mock_auth_service.check_accessability = mock.AsyncMock(return_value=access_token)
+
+    response = client.get("/auth/verify-token/", cookies={"access_token": access_token})
+
+    assert response.status_code == 200
+    assert response.cookies.get("access_token") == access_token
+    assert response.json() == access_token
+
+    mock_auth_service.check_accessability.assert_awaited_once_with(access_token)
+
+
+@pytest.mark.asyncio
+async def test_verify_token_invalid_token(
+    mock_auth_service: mock.AsyncMock, client: TestClient
+):
+    access_token = "cunewiocw478n_@2=-dkjjdlsjkclskd"
+    mock_auth_service.check_accessability = mock.AsyncMock(
+        side_effect=InvalidTokenError("...")
+    )
+
+    response = client.get("/auth/verify-token/", cookies={"access_token": access_token})
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Token is invalid, log-in again"}
+
+    mock_auth_service.check_accessability.assert_awaited_once_with(access_token)
