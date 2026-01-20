@@ -126,8 +126,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./ssl/www.awesome-note.com+1.pem:/etc/ssl/www.awesome-note.com+1.pem
-      - ./ssl/www.awesome-note.com+1-key.pem:/etc/ssl/www.awesome-note.com+1-key.pem
+      - "${PATH_TO_SSL_CERT}:/etc/ssl/www.awesome-note.com+1.pem"
+      - "${PATH_TO_SSL_CERT_KEY}:/etc/ssl/www.awesome-note.com+1-key.pem"
     networks:
       - awesome-notes-network
 
