@@ -138,6 +138,7 @@ venv.bak/
 .rabbitmq.env
 .test.env
 .env.local
+*.env
 
 # Spyder project settings
 .spyderproject
