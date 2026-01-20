@@ -7,14 +7,15 @@ from pydantic import Field
 
 BASE_DIR = Path(__file__).parent.parent
 
-
-class PostgresSettings(BaseSettings):
+class ModelConfigMixin:
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, "..", ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
+
+class PostgresSettings(BaseSettings, ModelConfigMixin):
     host: str = Field("127.0.0.1", alias="POSTGRES_HOST")
     port: int = Field(5432, alias="POSTGRES_PORT")
     user: str = Field("postgres", alias="POSTGRES_USER")
@@ -25,13 +26,7 @@ class PostgresSettings(BaseSettings):
 postgres_settings = PostgresSettings()
 
 
-class RabbitMQSettings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=os.path.join(BASE_DIR, "..", ".env"),
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
-
+class RabbitMQSettings(BaseSettings, ModelConfigMixin):
     host: str = Field("127.0.0.1", alias="RABBITMQ_HOST")
     port: int = Field(5672, alias="RABBITMQ_PORT")
     user: str = Field("guest", alias="RABBITMQ_USER")
@@ -40,6 +35,16 @@ class RabbitMQSettings(BaseSettings):
 
 USER_CREATION_QUEUE_NAME = "user_creation_queue"
 rabbitmq_settings = RabbitMQSettings()
+
+
+class RedisSettings(BaseSettings, ModelConfigMixin):
+    host: str = Field("127.0.0.1", alias="REDIS_HOST")
+    port: int = Field(6379, alias="REDIS_PORT")
+    user: str = Field("default", alias="REDIS_USER")
+    password: str = Field("", alias="REDIS_USER_PASSWORD")
+
+
+redis_settings = RedisSettings()
 
 # security
 
