@@ -2,6 +2,8 @@ services:
   auth-service-http:
     build: ./auth_service
     container_name: auth_service_http
+    expose:
+      - "8002"
     env_file: "auth_service/.env"
     restart: always
     depends_on:
@@ -9,10 +11,14 @@ services:
         condition: service_healthy
       user-service-db:
         condition: service_started
+    networks:
+      - awesome-notes-network
   
   user-service-http:
     build: ./user_service
     container_name: user_service_http
+    expose: 
+      - "8001"
     env_file: "user_service/.env"
     restart: always
     depends_on:
@@ -20,10 +26,14 @@ services:
         condition: service_healthy
       user-service-db:
         condition: service_started
+    networks:
+      - awesome-notes-network
   
   notes-service-http:
     build: ./notes_service
     container_name: notes_service_http
+    expose:
+      - "8003"
     env_file: "notes_service/.env"
     restart: always
     depends_on:
@@ -31,6 +41,8 @@ services:
         condition: service_healthy
       notes-service-db:
         condition: service_started
+    networks:
+      - awesome-notes-network
 
   user-service-db:
     image: postgres:latest
@@ -39,6 +51,8 @@ services:
     volumes: 
       - user_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
+    networks:
+      - awesome-notes-network
 
   notes-service-db:
     image: postgres:latest
@@ -46,6 +60,9 @@ services:
     env_file: "./notes_service/.env"
     volumes:
       - notes_async_service_postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - awesome-notes-network
 
   auth-service-db:
     image: postgres:latest
@@ -54,11 +71,12 @@ services:
     volumes:
       - auth_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
+    networks:
+      - awesome-notes-network
 
   awesome-notes-rabbitmq:
     image: rabbitmq:4.1-management-alpine
     hostname: awesome-notes-rabbitmq
-    env_file: ".rabbitmq.env"
     environment:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
     volumes: 
@@ -69,6 +87,32 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - awesome-notes-network
+    
+  awesome-notes-redis:
+    image: redis:8-alpine
+    command: >
+      sh -c '
+          mkdir -p /usr/local/etc/redis &&
+          echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+          echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+          echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+          echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+          echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+          echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+          redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    volumes: 
+      - awesome-notes-redis:/data
+    restart: on-failure 
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --user $REDIS_USER --pass $REDIS_USER_PASSWORD PING"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - awesome-notes-network
 
   awesome-notes-nginx:
     build: ./nginx/
@@ -76,12 +120,24 @@ services:
     depends_on:
       - auth-service-http
       - user-service-http
+      - notes-service-http
     restart: on-failure
     ports: 
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl/www.awesome-note.com+1.pem:/etc/ssl/www.awesome-note.com+1.pem
+      - ./ssl/www.awesome-note.com+1-key.pem:/etc/ssl/www.awesome-note.com+1-key.pem
+    networks:
+      - awesome-notes-network
 
 volumes:
   user_async_service_postgres_data:
   notes_async_service_postgres_data:
   auth_async_service_postgres_data:
   awesome-notes_rabbitmq_data:
+  awesome-notes-redis:
+
+networks:
+  awesome-notes-network:
+    driver: bridge
