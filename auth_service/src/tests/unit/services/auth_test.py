@@ -1,13 +1,13 @@
 import json
 import uuid
-from datetime import datetime
-from typing import TYPE_CHECKING
 from unittest import mock
+from datetime import timedelta, datetime, timezone
+from typing import TYPE_CHECKING, Callable
 from contextlib import nullcontext as does_not_raise
 
 import pytest
 
-from src.models.auth import AuthCredentials 
+from src.models.auth import AuthCredentials
 from src.schemas.auth import (
     AuthCredentialsRegisterSchema,
     AuthCredentialsLoginSchema,
@@ -19,6 +19,8 @@ from src.exceptions.services import (
     AuthCredentialsAlreadyExistsError,
     UnableToCreareAuthCredentials,
     PasswordsDidNotMatch,
+    InvalidTokenError,
+    TokenExpiredError,
 )
 from src.exceptions.repositories import RowDoesNotExist
 from src.exceptions.integration import UserCreationException
@@ -26,10 +28,9 @@ from src.exceptions.broker import (
     UnableToConnectToBrokerError,
     ReceivingResponseTimeOutError,
 )
-from src.security.jwt import verify_jwt_token
 
 if TYPE_CHECKING:
-    from src.services.auth import AuthService
+    from src.services.auth import AuthService, JWTTokenService
 
 
 class TestAuthService:
@@ -207,12 +208,12 @@ class TestAuthService:
     )
     async def test_register_with_rpc_client_user_creation_error(
         self,
-        login,
-        bare_password,
-        username,
-        gender,
-        age,
-        exception,
+        login: str,
+        bare_password: str,
+        username: str,
+        gender: str,
+        age: int,
+        exception: pytest.RaisesExc,
         mock_auth_repository: mock.Mock,
         mock_user_creation_rpc_client: mock.Mock,
         auth_service: "AuthService",
@@ -280,37 +281,201 @@ class TestAuthService:
     )
     async def test_login(
         self,
-        login,
-        password,
-        hashed_password,
-        raised_exception,
-        expected_exception,
+        login: str,
+        password: str,
+        hashed_password: str,
+        raised_exception: Exception,
+        expected_exception: pytest.RaisesExc,
+        mock_auth_repository: mock.AsyncMock,
+        mock_token_service: mock.AsyncMock,
+        mock_password_service: mock.Mock,
         auth_service: "AuthService",
-        mock_auth_repository,
-        mock_password_service,
     ):
         auth_credentials_login_schema = AuthCredentialsLoginSchema(
             login=login, password=password
         )
         mock_auth_repository.get_one_by_login = mock.AsyncMock(
             side_effect=raised_exception,
-            return_value=AuthCredentials(login=login, password=hashed_password)
+            return_value=AuthCredentials(login=login, password=hashed_password),
         )
         mock_password_service.verify_password_hash = mock.Mock(
             return_value=True if password == hashed_password else False
         )
+        returned_access_token = "ewfjnvbowenvnoewuvih48932vo4208v8"
+        mock_token_service.create_token = mock.AsyncMock(
+            return_value=returned_access_token
+        )
+
         with expected_exception:
             access_token = await auth_service.login(
                 credentials=auth_credentials_login_schema
             )
 
-            assert isinstance(access_token, str)
+            assert access_token == returned_access_token
             mock_auth_repository.get_one_by_login.assert_awaited_once_with(login=login)
             mock_password_service.verify_password_hash.assert_called_once_with(
                 password, hashed_password
             )
+            mock_token_service.create_token.assert_awaited_once_with(login)
 
-            access_token_payload = verify_jwt_token(token=access_token)
+    @pytest.mark.asyncio
+    async def test_check_accessability_valid_token(
+        self, mock_token_service: mock.AsyncMock, auth_service: "AuthService"
+    ):
+        token = "ewfjnvbowenvnoewuvih48932vo4208v8"
+        mock_token_service.get_or_update_token = mock.AsyncMock(return_value=token)
 
-            assert access_token_payload["sub"] == login
-            assert access_token_payload["exp"] > datetime.now().toordinal()
+        returned_token = await auth_service.check_accessability(access_token=token)
+
+        assert returned_token == token
+
+    @pytest.mark.asyncio
+    async def test_check_accessability_invalid_token(
+        self, mock_token_service: mock.AsyncMock, auth_service: "AuthService"
+    ):
+        token = "ewfjnvbowenvnoewuvih48932vo4208v8"
+        mock_token_service.get_or_update_token = mock.AsyncMock(
+            side_effect=InvalidTokenError("...")
+        )
+
+        with pytest.raises(InvalidTokenError):
+            _ = await auth_service.check_accessability(access_token=token)
+
+    @pytest.mark.asyncio
+    async def test_check_accessability_expired_token(
+        self, mock_token_service: mock.AsyncMock, auth_service: "AuthService"
+    ):
+        token = "ewfjnvbowenvnoewuvih48932vo4208v8"
+        mock_token_service.get_or_update_token = mock.AsyncMock(
+            side_effect=TokenExpiredError("...")
+        )
+
+        with pytest.raises(TokenExpiredError):
+            _ = await auth_service.check_accessability(access_token=token)
+
+
+class TestJWTTokenService:
+    @pytest.mark.asyncio
+    async def test_create_token(
+        self,
+        mock_redis_token_repository: mock.AsyncMock,
+        decode_jwt_token: Callable,
+        jwt_token_service: "JWTTokenService",
+    ):
+        sub = "some_username"
+        access_token_life_time = timedelta(minutes=10)
+        refresh_token_life_time = timedelta(days=1)
+        additional_access_token_payload = {"access_key": "value"}
+        additional_refresh_token_payload = {"refresh_key": "value"}
+        mock_redis_token_repository.save_token = mock.AsyncMock()
+
+        access_token = await jwt_token_service.create_token(
+            sub=sub,
+            access_payload=additional_access_token_payload,
+            refresh_payload=additional_refresh_token_payload,
+        )
+
+        access_payload = decode_jwt_token(token=access_token)
+        assert access_payload["sub"] == sub
+        assert (
+            access_payload["exp"] - access_payload["iat"]
+            == access_token_life_time.total_seconds()
+        )
+
+        mock_redis_token_repository.save_token.assert_awaited_once()
+        refresh_payload = decode_jwt_token(
+            token=mock_redis_token_repository.save_token.call_args.args[1]
+        )
+        assert refresh_payload["sub"] == sub
+        assert (
+            refresh_payload["exp"] - refresh_payload["iat"]
+            == refresh_token_life_time.total_seconds()
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_or_update_token_valid_access(
+        self,
+        encode_jwt_token: Callable,
+        jwt_token_service: "JWTTokenService",
+    ):
+        sub = "some_user_username_gout"
+        current_datetime = datetime.now(tz=timezone.utc)
+        access_payload = {"sub": sub, "iat": current_datetime, "exp": current_datetime + timedelta(minutes=8)}
+        old_access_token = encode_jwt_token(payload=access_payload)
+
+        access_token = await jwt_token_service.get_or_update_token(token=old_access_token)
+
+        assert access_token == old_access_token
+
+    @pytest.mark.asyncio
+    async def test_get_or_update_token_invalid_access(
+        self,
+        mock_redis_token_repository: mock.AsyncMock,
+        encode_jwt_token: Callable,
+        decode_jwt_token: Callable,
+        jwt_token_service: "JWTTokenService",
+    ):
+        sub = "some_user_username_gout"
+        current_datetime = datetime.now(tz=timezone.utc)
+        old_access_payload = {"sub": sub, "iat": current_datetime - timedelta(minutes=10), "exp": current_datetime}
+        old_access_token = encode_jwt_token(payload=old_access_payload)
+
+        refresh_payload = {"sub": sub, "iat": current_datetime - timedelta(minutes=10), "exp": current_datetime + timedelta(days=1)}
+        refresh_token = encode_jwt_token(payload=refresh_payload)
+        mock_redis_token_repository.is_token_exists = mock.AsyncMock(return_value=True)
+        mock_redis_token_repository.get_token = mock.AsyncMock(return_value=refresh_token)
+
+        access_token = await jwt_token_service.get_or_update_token(token=old_access_token)
+
+        assert access_token != old_access_token
+
+        access_payload = decode_jwt_token(token=access_token)
+        assert access_payload["sub"] == sub
+        assert access_payload["exp"] - access_payload["iat"] == timedelta(minutes=10).seconds
+
+        mock_redis_token_repository.is_token_exists.assert_awaited_once_with(sub)
+        mock_redis_token_repository.get_token.assert_awaited_once_with(sub)
+        
+    @pytest.mark.asyncio
+    async def test_get_or_update_token_elapsed_access_and_refresh(
+        self,
+        mock_redis_token_repository: mock.AsyncMock,
+        encode_jwt_token: Callable,
+        jwt_token_service: "JWTTokenService",
+    ):
+        sub = "some_user_username_gout"
+        current_datetime = datetime.now(tz=timezone.utc)
+        old_access_payload = {"sub": sub, "iat": current_datetime - timedelta(days=1), "exp": current_datetime}
+        old_access_token = encode_jwt_token(payload=old_access_payload)
+
+        refresh_payload = {"sub": sub, "iat": current_datetime - timedelta(days=1), "exp": current_datetime}
+        refresh_token = encode_jwt_token(payload=refresh_payload)
+        mock_redis_token_repository.is_token_exists = mock.AsyncMock(return_value=True)
+        mock_redis_token_repository.get_token = mock.AsyncMock(return_value=refresh_token)
+
+        with pytest.raises(TokenExpiredError):
+            _ = await jwt_token_service.get_or_update_token(token=old_access_token)
+
+            mock_redis_token_repository.is_token_exists.assert_awaited_once_with(sub)
+            mock_redis_token_repository.get_token.assert_awaited_once_with(sub)
+    
+    @pytest.mark.asyncio
+    async def test_get_or_update_token_elapsed_access_refresh_unexists(
+        self,
+        mock_redis_token_repository: mock.AsyncMock,
+        encode_jwt_token: Callable,
+        jwt_token_service: "JWTTokenService",
+    ):
+        sub = "some_user_username_gout"
+        current_datetime = datetime.now(tz=timezone.utc)
+        old_access_payload = {"sub": sub, "iat": current_datetime - timedelta(days=1), "exp": current_datetime}
+        old_access_token = encode_jwt_token(payload=old_access_payload)
+
+        mock_redis_token_repository.is_token_exists = mock.AsyncMock(return_value=False)
+
+        with pytest.raises(TokenExpiredError):
+            _ = await jwt_token_service.get_or_update_token(token=old_access_token)
+
+            mock_redis_token_repository.is_token_exists.assert_awaited_once_with(sub)
+        
+    
