@@ -2,7 +2,6 @@
     <img src="images/awesome-notes-logo.png">
 </p>
 
-# <h1 align="center">Awesome-notes</h1>
 This is a API for writting notes in MarkDown format, it allows create users and notes, provides API Geteway authentification system
 
 
