@@ -1,0 +1,99 @@
+name: Awesome-notes actions
+
+on:
+  push:
+    branches:
+      - main
+      - dev 
+  merge:
+    branches:
+      - main
+
+jobs:
+  services-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Test auth_service
+    - run: cd auth_service/ && python3 pip install -r requirements.txt && python3 pytest
+
+    - name: Test user_service
+    - run: cd ../user_service/ && python3 pip install -r requirements.txt && python3 pytest
+
+    - name: Test notes_service
+    - run: cd ../notes_service/ && python3 pip install -r requirements.txt && python3 pytest
+    
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Construction services`s .env files
+      - run: |
+      # auth_service .env construction
+      touch auth_service/.env
+      echo "POSTGRES_HOST=${{secrets.GH_AUTH_POSTGRES_HOST}}" >> auth_service/.env 
+      echo "POSTGRES_PORT=${{secrets.GH_AUTH_POSTGRES_PORT}}" >> auth_service/.env
+      echo "POSTGRES_USER=${{secrets.GH_AUTH_POSTGRES_USER}}" >> auth_service/.env
+      echo "POSTGRES_PASSWORD=${{secrets.GH_AUTH_POSTGRES_PASSWORD}}" >> auth_service/.env
+      echo "POSTGRES_DB=${{secrets.GH_AUTH_POSTGRES_DB}}" >> auth_service/.env
+
+      echo "RABBITMQ_HOST=${{secrets.GH_AUTH_RABBITMQ_HOST}}" >> auth_service/.env
+      echo "RABBITMQ_PORT=${{secrets.GH_AUTH_RABBITMQ_PORT}}" >> auth_service/.env
+      echo "RABBITMQ_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}" >> auth_service/.env
+      echo "RABBITMQ_PASSWORD=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}" >> auth_service/.env
+
+      echo "REDIS_HOST=${{secrets.GH_AUTH_REDIS_HOST}}" >> auth_service/.env
+      echo "REDIS_PORT=${{secrets.GH_AUTH_REDIS_PORT}}" >> auth_service/.env
+      echo "REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}" >> auth_service/.env
+      echo "REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}" >> auth_service/.env
+      echo "REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_PASSWORD}}" >> auth_service/.env
+
+      echo "ALGORITHM={{secrets.GH_AUTH_ALGORITHM}}" >> auth_service/.env
+      echo "SECRET_KEY=${{secrets.GH_AUTH_SECRET_KEY}}" >> auth_service/.env
+
+      # user_service .env construction
+      touch user_service/.env
+      echo "POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}" > user_service/.env
+      echo "POSTGRES_PORT=${{secrets.GH_USER_POSTGRES_PORT}}" >> user_service/.env
+      echo "POSTGRES_USER=${{secrets.GH_USER_POSTGRES_USER}}" >> user_service/.env
+      echo "POSTGRES_PASSWORD=${{secrets.GH_USER_POSTGRES_PASSWORD}}" >> user_service/.env
+      echo "POSTGRES_DB=${{secrets.GH_USER_POSTGRES_DB}}" >> user_service/.env
+
+      echo "RABBITMQ_HOST=${{secrets.GH_USER_RABBITMQ_HOST}}" >> user_service/.env
+      echo "RABBITMQ_PORT=${{secrets.GH_USER_RABBITMQ_PORT}}" >> user_service/.env
+      echo "RABBITMQ_USER=${{secrets.GH_USER_RABBITMQ_USER}}" >> user_service/.env
+      echo "RABBITMQ_PASSWORD=${{secrets.GH_USER_RABBITMQ_PASSWORD}}" >> user_service/.env
+
+      # notes_service .env construction
+      touch notes_service/.env
+      echo "POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}" > user_service/.env
+      echo "POSTGRES_PORT=${{secrets.GH_NOTES_POSTGRES_PORT}}" >> user_service/.env
+      echo "POSTGRES_USER=${{secrets.GH_NOTES_POSTGRES_USER}}" >> user_service/.env
+      echo "POSTGRES_PASSWORD=${{secrets.GH_NOTES_POSTGRES_PASSWORD}}" >> user_service/.env
+      echo "POSTGRES_DB=${{secrets.GH_NOTES_POSTGRES_DB}}" >> user_service/.env
+
+      echo "RABBITMQ_HOST=${{secrets.GH_NOTES_RABBITMQ_HOST}}" >> notes_service/.env
+      echo "RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}" >> notes_service/.env
+      echo "RABBITMQ_USER=${{secrets.GH_NOTES_RABBITMQ_USER}}" >> notes_service/.env
+      echo "RABBITMQ_PASSWORD=${{secrets.GH_NOTES_RABBITMQ_PASSWORD}}" >> notes_service/.env
+
+      env
+      - name: Run docker compose
+        uses: hoverkraft-tech/compose-action@05da55b2bb8a5a759d1c4732095044bd9018c050 # v2.4.3
+        with:
+          compose-file: "./docker/docker-compose.yml"
+        env:
+          RABBITMQ_DEFAULT_USER: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_USER}}
+          RABBITMQ_DEFAULT_PASS: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_PASS}}
+
+          REDIS_USER: ${{GH_GLOBAL_DEV_REDIS_USER}}
+          REDIS_USER_PASSWORD: ${{GH_GLOBAL_DEV_REDIS_USER_PASSWORD}}
+          REDIS_PASSWORD: ${{GH_GLOBAL_DEV_REDIS_PASSWORD}}
+
+          PATH_TO_SSL_CERT: ${{GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
+          PATH_TO_SSL_CERT_KEY: ${{GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
