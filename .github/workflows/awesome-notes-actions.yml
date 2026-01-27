@@ -17,11 +17,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Test auth_service
+    - name: Test services
       run: |
-          cd auth_service/ && python3 pip install -r requirements.txt && python3 pytest
-          cd ../user_service/ && python3 pip install -r requirements.txt && python3 pytest
-          cd ../notes_service/ && python3 pip install -r requirements.txt && python3 pytest
+          echo Testing auth_service....
+          cd auth_service/ && python3 -m pip install -r requirements.txt && python3 -m pytest
+          echo Testing user_service....
+          cd ../user_service/ && python3 -m pip install -r requirements.txt && python3 -m pytest
+          echo Testing notes_service....
+          cd ../notes_service/ && python3 -m pip install -r requirements.txt && python3 -m pytest
     
   deploy:
     runs-on: ubuntu-latest
@@ -55,7 +58,7 @@ jobs:
 
           # user_service .env construction
           touch user_service/.env
-          echo "POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}" > user_service/.env
+          echo "POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}" >> user_service/.env
           echo "POSTGRES_PORT=${{secrets.GH_USER_POSTGRES_PORT}}" >> user_service/.env
           echo "POSTGRES_USER=${{secrets.GH_USER_POSTGRES_USER}}" >> user_service/.env
           echo "POSTGRES_PASSWORD=${{secrets.GH_USER_POSTGRES_PASSWORD}}" >> user_service/.env
