@@ -86,7 +86,7 @@ jobs:
       - name: Run docker compose
         uses: hoverkraft-tech/compose-action@05da55b2bb8a5a759d1c4732095044bd9018c050 # v2.4.3
         with:
-          compose-file: "./docker/docker-compose.yml"
+          compose-file: "docker-compose.yml"
         env:
           RABBITMQ_DEFAULT_USER: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_USER}}
           RABBITMQ_DEFAULT_PASS: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_PASS}}
