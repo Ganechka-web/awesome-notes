@@ -102,7 +102,5 @@ jobs:
         uses: hoverkraft-tech/compose-action@05da55b2bb8a5a759d1c4732095044bd9018c050 # v2.4.3
         with: 
           compose-file: "docker-compose.yml"
-
-      - name: Check Docker logs
-        run: docker-compose logs
-        if: failure()
+      - name: Check free disk space
+        run: df -h
