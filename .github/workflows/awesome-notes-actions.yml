@@ -70,11 +70,11 @@ jobs:
           echo "RABBITMQ_PASSWORD=${{secrets.GH_USER_RABBITMQ_PASSWORD}}" >> user_service/.env
           # notes_service .env construction
           touch notes_service/.env
-          echo "POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}" > user_service/.env
-          echo "POSTGRES_PORT=${{secrets.GH_NOTES_POSTGRES_PORT}}" >> user_service/.env
-          echo "POSTGRES_USER=${{secrets.GH_NOTES_POSTGRES_USER}}" >> user_service/.env
-          echo "POSTGRES_PASSWORD=${{secrets.GH_NOTES_POSTGRES_PASSWORD}}" >> user_service/.env
-          echo "POSTGRES_DB=${{secrets.GH_NOTES_POSTGRES_DB}}" >> user_service/.env
+          echo "POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}" >> notes_service/.env
+          echo "POSTGRES_PORT=${{secrets.GH_NOTES_POSTGRES_PORT}}" >> notes_service/.env
+          echo "POSTGRES_USER=${{secrets.GH_NOTES_POSTGRES_USER}}" >> notes_service/.env
+          echo "POSTGRES_PASSWORD=${{secrets.GH_NOTES_POSTGRES_PASSWORD}}" >> notes_service/.env
+          echo "POSTGRES_DB=${{secrets.GH_NOTES_POSTGRES_DB}}" >> notes_service/.env
     
           echo "RABBITMQ_HOST=${{secrets.GH_NOTES_RABBITMQ_HOST}}" >> notes_service/.env
           echo "RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}" >> notes_service/.env
