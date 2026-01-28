@@ -35,7 +35,6 @@ jobs:
 
       - name: Construction services`s .env files
         run: | 
-          pwd
           # auth_service .env construction
           touch auth_service/.env 
           echo "POSTGRES_HOST=${{secrets.GH_AUTH_POSTGRES_HOST}}" >> auth_service/.env 
@@ -89,6 +88,7 @@ jobs:
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}" >> $GITHUB_ENV
       - name: Validate .env files
         run: |
+          cat auth_service/.env
           # Check for missing required variables auth_service/.env
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER" 
@@ -101,6 +101,7 @@ jobs:
             fi
           done
 
+          cat user_service/.env
           # Check for missing required variables user_service/.env
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
@@ -111,6 +112,7 @@ jobs:
             fi
           done
 
+          cat notes_service/.env
           # Check for missing required variables notes_service/.env
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
