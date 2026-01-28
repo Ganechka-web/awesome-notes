@@ -35,6 +35,7 @@ jobs:
 
       - name: Construction services`s .env files
         run: | 
+          pwd
           # auth_service .env construction
           touch auth_service/.env 
           echo "POSTGRES_HOST=${{secrets.GH_AUTH_POSTGRES_HOST}}" >> auth_service/.env 
@@ -56,7 +57,7 @@ jobs:
     
           echo "ALGORITHM={{secrets.GH_AUTH_ALGORITHM}}" >> auth_service/.env
           echo "SECRET_KEY=${{secrets.GH_AUTH_SECRET_KEY}}" >> auth_service/.env
-
+          cat auth_service/.env
           # user_service .env construction
           touch user_service/.env
           echo "POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}" >> user_service/.env
@@ -69,7 +70,7 @@ jobs:
           echo "RABBITMQ_PORT=${{secrets.GH_USER_RABBITMQ_PORT}}" >> user_service/.env
           echo "RABBITMQ_USER=${{secrets.GH_USER_RABBITMQ_USER}}" >> user_service/.env
           echo "RABBITMQ_PASSWORD=${{secrets.GH_USER_RABBITMQ_PASSWORD}}" >> user_service/.env
-    
+          cat user_service/.env
           # notes_service .env construction
           touch notes_service/.env
           echo "POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}" > user_service/.env
@@ -82,13 +83,14 @@ jobs:
           echo "RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}" >> notes_service/.env
           echo "RABBITMQ_USER=${{secrets.GH_NOTES_RABBITMQ_USER}}" >> notes_service/.env
           echo "RABBITMQ_PASSWORD=${{secrets.GH_NOTES_RABBITMQ_PASSWORD}}" >> notes_service/.env
-
+          cat notes_service/.env
+          
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
 
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}" >> $GITHUB_ENV
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}" >> $GITHUB_ENV
-
+  
       - name: Set up docker compose
         uses: docker/setup-compose-action@v1
         
