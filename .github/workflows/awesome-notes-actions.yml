@@ -142,4 +142,5 @@ jobs:
         run: |
             docker compose pull
             docker compose up
+            sleep 20
             docker compose exec auth-service-http env
