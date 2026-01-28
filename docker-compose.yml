@@ -45,7 +45,7 @@ services:
       - awesome-notes-network
 
   user-service-db:
-    image: postgres:latest
+    image: postgres:17-alpine
     command: ["postgres","-c","port=5432"]
     env_file: "./user_service/.env"
     volumes: 
@@ -55,7 +55,7 @@ services:
       - awesome-notes-network
 
   notes-service-db:
-    image: postgres:latest
+    image: postgres:17-alpine
     command: ["postgres","-c","port=5433"]
     env_file: "./notes_service/.env"
     volumes:
@@ -65,7 +65,7 @@ services:
       - awesome-notes-network
 
   auth-service-db:
-    image: postgres:latest
+    image: postgres:17-alpine
     command: ["postgres","-c","port=5434"]
     env_file: "./auth_service/.env"
     volumes:
