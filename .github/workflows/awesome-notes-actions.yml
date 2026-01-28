@@ -57,7 +57,6 @@ jobs:
     
           echo "ALGORITHM={{secrets.GH_AUTH_ALGORITHM}}" >> auth_service/.env
           echo "SECRET_KEY=${{secrets.GH_AUTH_SECRET_KEY}}" >> auth_service/.env
-          cat auth_service/.env
           # user_service .env construction
           touch user_service/.env
           echo "POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}" >> user_service/.env
@@ -70,7 +69,6 @@ jobs:
           echo "RABBITMQ_PORT=${{secrets.GH_USER_RABBITMQ_PORT}}" >> user_service/.env
           echo "RABBITMQ_USER=${{secrets.GH_USER_RABBITMQ_USER}}" >> user_service/.env
           echo "RABBITMQ_PASSWORD=${{secrets.GH_USER_RABBITMQ_PASSWORD}}" >> user_service/.env
-          cat user_service/.env
           # notes_service .env construction
           touch notes_service/.env
           echo "POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}" > user_service/.env
@@ -83,14 +81,45 @@ jobs:
           echo "RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}" >> notes_service/.env
           echo "RABBITMQ_USER=${{secrets.GH_NOTES_RABBITMQ_USER}}" >> notes_service/.env
           echo "RABBITMQ_PASSWORD=${{secrets.GH_NOTES_RABBITMQ_PASSWORD}}" >> notes_service/.env
-          cat notes_service/.env
           
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
 
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}" >> $GITHUB_ENV
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}" >> $GITHUB_ENV
-  
+      - name: Validate .env files
+        run: |
+          # Check for missing required variables auth_service/.env
+          REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
+                          "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER" 
+                          "RABBITMQ_PASSWORD" "REDIS_HOST" "REDIS_PORT" "REDIS_USER"
+                          "REDIS_USER_PASSWORD" "REDIS_PASSWORD" "ALGORITHM" "SECRET_KEY") 
+          for var in "${REQUIRED_VARS[@]}"; do
+            if ! grep -q "^$var=" auth_service/.env; then
+              echo "Error: Missing required variable $var in auth_service/.env"
+              exit 1
+            fi
+          done
+
+          # Check for missing required variables user_service/.env
+          REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
+                          "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
+          for var in "${REQUIRED_VARS[@]}"; do
+            if ! grep -q "^$var=" user_service/.env; then
+              echo "Error: Missing required variable $var in auth_service/.env"
+              exit 1
+            fi
+          done
+
+          # Check for missing required variables notes_service/.env
+          REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
+                          "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
+          for var in "${REQUIRED_VARS[@]}"; do
+            if ! grep -q "^$var=" user_service/.env; then
+              echo "Error: Missing required variable $var in auth_service/.env"
+              exit 1
+            fi
+          done
       - name: Set up docker compose
         uses: docker/setup-compose-action@v1
         
