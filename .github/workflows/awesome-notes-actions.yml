@@ -88,6 +88,7 @@ jobs:
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}" >> $GITHUB_ENV
       - name: Validate .env files
         run: |
+          echo "auth"
           cat auth_service/.env
           # Check for missing required variables auth_service/.env
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
@@ -101,24 +102,26 @@ jobs:
             fi
           done
 
+          echo "user"
           cat user_service/.env
           # Check for missing required variables user_service/.env
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
           for var in "${REQUIRED_VARS[@]}"; do
             if ! grep -q "^$var=" user_service/.env; then
-              echo "Error: Missing required variable $var in auth_service/.env"
+              echo "Error: Missing required variable $var in user_service/.env"
               exit 1
             fi
           done
 
+          echo "notes"
           cat notes_service/.env
           # Check for missing required variables notes_service/.env
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
           for var in "${REQUIRED_VARS[@]}"; do
             if ! grep -q "^$var=" user_service/.env; then
-              echo "Error: Missing required variable $var in auth_service/.env"
+              echo "Error: Missing required variable $var in notes_service/.env"
               exit 1
             fi
           done
