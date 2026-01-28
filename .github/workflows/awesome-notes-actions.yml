@@ -81,10 +81,6 @@ jobs:
           echo "RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}" >> notes_service/.env
           echo "RABBITMQ_USER=${{secrets.GH_NOTES_RABBITMQ_USER}}" >> notes_service/.env
           echo "RABBITMQ_PASSWORD=${{secrets.GH_NOTES_RABBITMQ_PASSWORD}}" >> notes_service/.env
-
-          # absolute path to ssl
-          echo "PATH_TO_SSL_CERT=${pwd}${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT}} >> $GITHUB_ENV"
-          echo "PATH_TO_SSL_CERT_KEY=${pwd}${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}} >> $GITHUB_ENV"
       - name: Run docker compose
         uses: hoverkraft-tech/compose-action@05da55b2bb8a5a759d1c4732095044bd9018c050 # v2.4.3
         with:
@@ -97,5 +93,5 @@ jobs:
           REDIS_USER_PASSWORD: ${{secrets.GH_GLOBAL_DEV_REDIS_USER_PASSWORD}}
           REDIS_PASSWORD: ${{secrets.GH_GLOBAL_DEV_REDIS_PASSWORD}}
 
-          PATH_TO_SSL_CERT: ${{env.PATH_TO_SSL_CERT}}
-          PATH_TO_SSL_CERT_KEY: ${{env.PATH_TO_SSL_CERT_KEY}}
+          PATH_TO_SSL_CERT: $(pwd)${{secrets.GH_GLOBAL_PATH_TO_SSL_CERT}}
+          PATH_TO_SSL_CERT_KEY: $(pwd)${{secrets.GH_GLOBAL_PATH_TO_SSL_CERT_KEY}}
