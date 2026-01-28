@@ -142,3 +142,4 @@ jobs:
         run: |
             docker compose pull
             docker compose up
+            docker compose exec auth-service-http env
