@@ -4,7 +4,7 @@ services:
     container_name: auth_service_http
     expose:
       - "8002"
-    env_file: "auth_service/.env"
+    env_file: "./auth_service/.env"
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
@@ -19,7 +19,7 @@ services:
     container_name: user_service_http
     expose: 
       - "8001"
-    env_file: "user_service/.env"
+    env_file: "./user_service/.env"
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
@@ -34,7 +34,7 @@ services:
     container_name: notes_service_http
     expose:
       - "8003"
-    env_file: "notes_service/.env"
+    env_file: "./notes_service/.env"
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
