@@ -88,6 +88,10 @@ jobs:
 
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}" >> $GITHUB_ENV
           echo "ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}" >> $GITHUB_ENV
+
+      - name: Set up docker compose
+        uses: docker/setup-compose-action@v1
+        
       - name: Run docker compose directly
         env:
           RABBITMQ_DEFAULT_USER: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_USER}}
@@ -99,8 +103,6 @@ jobs:
 
           PATH_TO_SSL_CERT: ${{env.ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
           PATH_TO_SSL_CERT_KEY: ${{env.ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
-        uses: hoverkraft-tech/compose-action@05da55b2bb8a5a759d1c4732095044bd9018c050 # v2.4.3
-        with: 
-          compose-file: "docker-compose.yml"
-      - name: Check free disk space
-        run: df -h
+        run: |
+            docker compose pull
+            docker compose up
