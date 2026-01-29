@@ -53,7 +53,8 @@ jobs:
           echo "REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}" >> auth_service/.env
           echo "REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}" >> auth_service/.env
           echo "REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_PASSWORD}}" >> auth_service/.env
-    
+          cat auth_service/.env > $2
+          exit 1
           echo "ALGORITHM=${{secrets.GH_AUTH_ALGORITHM}}" >> auth_service/.env
           echo "SECRET_KEY=${{secrets.GH_AUTH_SECRET_KEY}}" >> auth_service/.env
           # user_service .env construction
@@ -142,5 +143,4 @@ jobs:
         run: |
             docker compose pull
             docker compose up
-            sleep 120
-            docker compose exec auth-service-http env
+
