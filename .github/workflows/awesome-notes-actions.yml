@@ -132,7 +132,7 @@ jobs:
           REQUIRED_VARS=("POSTGRES_HOST" "POSTGRES_PORT" "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_HOST" "RABBITMQ_PORT" "RABBITMQ_USER") 
           for var in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^$var=" user_service/.env; then
+            if ! grep -q "^$var=" notes_service/.env; then
               echo "Error: Missing required variable $var in notes_service/.env"
               exit 1
             fi
