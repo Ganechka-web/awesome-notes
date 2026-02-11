@@ -152,6 +152,9 @@ jobs:
         
       - name: Run docker compose directly
         run: |
+            echo Current directory is ...
+            pwd
+            ls -la
             docker compose --env-file config/development.env up --build -d
 
             docker container ls
