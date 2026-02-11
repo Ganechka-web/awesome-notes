@@ -142,5 +142,14 @@ jobs:
         
       - name: Run docker compose directly
         run: |
-            docker compose --env-file config/development.env up --build
+            docker compose --env-file config/development.env up --build -d
+
+            docker container ls
+            
+            echo auth env
+            docker compose exec auth-service-http /bin/sh env
+            echo user env 
+            docker compose exec user-service-http /bin/sh env
+            echo notes env 
+            docker compose exec notes-service-http /bin/sh env
 
