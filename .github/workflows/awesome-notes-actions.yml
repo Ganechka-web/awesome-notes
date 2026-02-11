@@ -35,78 +35,75 @@ jobs:
 
       - name: Construction services`s .env files
         run: | 
-          pwd
           # auth_service .env construction
-          cat > auth_service/.env << EOF  
-          POSTGRES_HOST=${{secrets.GH_AUTH_POSTGRES_HOST}}
-          POSTGRES_PORT=${{secrets.GH_AUTH_POSTGRES_PORT}}
-          POSTGRES_USER=${{secrets.GH_AUTH_POSTGRES_USER}}
-          POSTGRES_PASSWORD=${{secrets.GH_AUTH_POSTGRES_PASSWORD}}
-          POSTGRES_DB=${{secrets.GH_AUTH_POSTGRES_DB}}
-
-          RABBITMQ_HOST=${{secrets.GH_AUTH_RABBITMQ_HOST}}
-          RABBITMQ_PORT=${{secrets.GH_AUTH_RABBITMQ_PORT}}
-          RABBITMQ_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}
-          RABBITMQ_PASSWORD=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}
+          cat > auth_service/.env <<-EOF
+              POSTGRES_HOST=${{secrets.GH_AUTH_POSTGRES_HOST}}
+              POSTGRES_PORT=${{secrets.GH_AUTH_POSTGRES_PORT}}
+              POSTGRES_USER=${{secrets.GH_AUTH_POSTGRES_USER}}
+              POSTGRES_PASSWORD=${{secrets.GH_AUTH_POSTGRES_PASSWORD}}
+              POSTGRES_DB=${{secrets.GH_AUTH_POSTGRES_DB}}
     
-          REDIS_HOST=${{secrets.GH_AUTH_REDIS_HOST}}
-          REDIS_PORT=${{secrets.GH_AUTH_REDIS_PORT}}
-          REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}
-          REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}
-          REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_PASSWORD}}
-
-          ALGORITHM=${{secrets.GH_AUTH_ALGORITHM}}
-          SECRET_KEY=${{secrets.GH_AUTH_SECRET_KEY}}
+              RABBITMQ_HOST=${{secrets.GH_AUTH_RABBITMQ_HOST}}
+              RABBITMQ_PORT=${{secrets.GH_AUTH_RABBITMQ_PORT}}
+              RABBITMQ_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}
+              RABBITMQ_PASSWORD=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}
+        
+              REDIS_HOST=${{secrets.GH_AUTH_REDIS_HOST}}
+              REDIS_PORT=${{secrets.GH_AUTH_REDIS_PORT}}
+              REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}
+              REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}
+              REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_PASSWORD}}
+    
+              ALGORITHM=${{secrets.GH_AUTH_ALGORITHM}}
+              SECRET_KEY=${{secrets.GH_AUTH_SECRET_KEY}}
           EOF
           echo user_service/.env has created successfully
 
           # user_service .env construction
-          cat > user_service/.env << EOF
-          POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}
-          POSTGRES_PORT=${{secrets.GH_USER_POSTGRES_PORT}}
-          POSTGRES_USER=${{secrets.GH_USER_POSTGRES_USER}}
-          POSTGRES_PASSWORD=${{secrets.GH_USER_POSTGRES_PASSWORD}}
-          POSTGRES_DB=${{secrets.GH_USER_POSTGRES_DB}}
-    
-          RABBITMQ_HOST=${{secrets.GH_USER_RABBITMQ_HOST}}
-          RABBITMQ_PORT=${{secrets.GH_USER_RABBITMQ_PORT}}
-          RABBITMQ_USER=${{secrets.GH_USER_RABBITMQ_USER}}
-          RABBITMQ_PASSWORD=${{secrets.GH_USER_RABBITMQ_PASSWORD}}
+          cat > user_service/.env <<-EOF
+              POSTGRES_HOST=${{secrets.GH_USER_POSTGRES_HOST}}
+              POSTGRES_PORT=${{secrets.GH_USER_POSTGRES_PORT}}
+              POSTGRES_USER=${{secrets.GH_USER_POSTGRES_USER}}
+              POSTGRES_PASSWORD=${{secrets.GH_USER_POSTGRES_PASSWORD}}
+              POSTGRES_DB=${{secrets.GH_USER_POSTGRES_DB}}
+        
+              RABBITMQ_HOST=${{secrets.GH_USER_RABBITMQ_HOST}}
+              RABBITMQ_PORT=${{secrets.GH_USER_RABBITMQ_PORT}}
+              RABBITMQ_USER=${{secrets.GH_USER_RABBITMQ_USER}}
+              RABBITMQ_PASSWORD=${{secrets.GH_USER_RABBITMQ_PASSWORD}}
           EOF
           echo user_service/.env has created successfully
 
           # notes_service .env construction
-          cat > notes_service/.env << EOF
-          POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}
-          POSTGRES_PORT=${{secrets.GH_NOTES_POSTGRES_PORT}}
-          POSTGRES_USER=${{secrets.GH_NOTES_POSTGRES_USER}}
-          POSTGRES_PASSWORD=${{secrets.GH_NOTES_POSTGRES_PASSWORD}}
-          POSTGRES_DB=${{secrets.GH_NOTES_POSTGRES_DB}}
-    
-          RABBITMQ_HOST=${{secrets.GH_NOTES_RABBITMQ_HOST}}
-          RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}
-          RABBITMQ_USER=${{secrets.GH_NOTES_RABBITMQ_USER}}
-          RABBITMQ_PASSWORD=${{secrets.GH_NOTES_RABBITMQ_PASSWORD}}
+          cat > notes_service/.env <<-EOF
+              POSTGRES_HOST=${{secrets.GH_NOTES_POSTGRES_HOST}}
+              POSTGRES_PORT=${{secrets.GH_NOTES_POSTGRES_PORT}}
+              POSTGRES_USER=${{secrets.GH_NOTES_POSTGRES_USER}}
+              POSTGRES_PASSWORD=${{secrets.GH_NOTES_POSTGRES_PASSWORD}}
+              POSTGRES_DB=${{secrets.GH_NOTES_POSTGRES_DB}}
+        
+              RABBITMQ_HOST=${{secrets.GH_NOTES_RABBITMQ_HOST}}
+              RABBITMQ_PORT=${{secrets.GH_NOTES_RABBITMQ_PORT}}
+              RABBITMQ_USER=${{secrets.GH_NOTES_RABBITMQ_USER}}
+              RABBITMQ_PASSWORD=${{secrets.GH_NOTES_RABBITMQ_PASSWORD}}
           EOF
           echo notes_service/.env has created successfully
 
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
 
-          cat > config/development.env << EOF
-          RABBITMQ_DEFAULT_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}
-          RABBITMQ_DEFAULT_PASS=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}
-
-          REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}
-          REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}
-          REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_USER}}
-
-          PATH_TO_SSL_CERT=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}
-          PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}
+          cat > config/development.env <<-EOF
+              RABBITMQ_DEFAULT_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}
+              RABBITMQ_DEFAULT_PASS=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}
+    
+              REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}
+              REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}
+              REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_USER}}
+    
+              PATH_TO_SSL_CERT=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}
+              PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}
           EOF
           echo config/development.env has created successfully
-
-          ls -la . auth_service notes_service user_service
       - name: Validate .env files
         run: |
           # Check for missing required variables auth_service/.env
