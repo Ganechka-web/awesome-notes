@@ -93,7 +93,7 @@ jobs:
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
           export ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY=$(pwd)${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
 
-          cat config/development.env << EOF
+          cat > config/development.env << EOF
           RABBITMQ_DEFAULT_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}
           RABBITMQ_DEFAULT_PASS=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}
 
