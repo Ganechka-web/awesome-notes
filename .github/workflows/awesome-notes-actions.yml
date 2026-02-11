@@ -137,6 +137,16 @@ jobs:
               exit 1
             fi
           done
+          
+          # Check for missing required variables config/development.env
+          REQUIRED_VARS=("RABBITMQ_DEFAULT_USER" "RABBITMQ_DEFAULT_PASS" "REDIS_USER" "REDIS_USER_PASSWORD" 
+                          "REDIS_PASSWORD" "PATH_TO_SSL_CERT" "PATH_TO_SSL_CERT_KEY") 
+          for var in "${REQUIRED_VARS[@]}"; do
+            if ! grep -q "^$var=" config/development.env; then
+              echo "Error: Missing required variable $var in config/development.env"
+              exit 1
+            fi
+          done
       - name: Set up docker compose
         uses: docker/setup-compose-action@v1
         
