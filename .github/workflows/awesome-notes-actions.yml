@@ -95,13 +95,11 @@ jobs:
           cat > config/development.env <<EOF
           RABBITMQ_DEFAULT_USER=${{secrets.GH_AUTH_RABBITMQ_USER}}
           RABBITMQ_DEFAULT_PASS=${{secrets.GH_AUTH_RABBITMQ_PASSWORD}}
-
           REDIS_USER=${{secrets.GH_AUTH_REDIS_USER}}
           REDIS_USER_PASSWORD=${{secrets.GH_AUTH_REDIS_USER_PASSWORD}}
           REDIS_PASSWORD=${{secrets.GH_AUTH_REDIS_PASSWORD}}
-
-          PATH_TO_SSL_CERT=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}
-          PATH_TO_SSL_CERT_KEY=${ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}
+          PATH_TO_SSL_CERT=${pwd}${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
+          PATH_TO_SSL_CERT_KEY=${pwd}${{secrets.GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
           EOF
           echo config/development.env has created successfully
       - name: Validate .env files
