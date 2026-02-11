@@ -1,18 +1,18 @@
 import os
 from pathlib import Path
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator
 
 
 BASE_DIR = Path(__file__).parent.parent
 
-class ModelConfigMixin:
-    model_config = SettingsConfigDict(
-        env_file=os.path.join(BASE_DIR, "..", ".env"),
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+# class ModelConfigMixin:
+#     model_config = SettingsConfigDict(
+#         env_file=os.path.join(BASE_DIR, "..", ".env"),
+#         env_file_encoding="utf-8",
+#         extra="ignore",
+#     )
 
 
 class PortAlwaysIntegerMixin:
@@ -24,7 +24,7 @@ class PortAlwaysIntegerMixin:
         return int(value)
 
 
-class PostgresSettings(BaseSettings, ModelConfigMixin, PortAlwaysIntegerMixin):
+class PostgresSettings(BaseSettings, PortAlwaysIntegerMixin):
     host: str = Field("127.0.0.1", alias="POSTGRES_HOST")
     port: int = Field(5432, alias="POSTGRES_PORT")
     user: str = Field("postgres", alias="POSTGRES_USER")
@@ -35,7 +35,7 @@ class PostgresSettings(BaseSettings, ModelConfigMixin, PortAlwaysIntegerMixin):
 postgres_settings = PostgresSettings()
 
 
-class RabbitMQSettings(BaseSettings, ModelConfigMixin, PortAlwaysIntegerMixin):
+class RabbitMQSettings(BaseSettings, PortAlwaysIntegerMixin):
     host: str = Field("127.0.0.1", alias="RABBITMQ_HOST")
     port: int = Field(5672, alias="RABBITMQ_PORT")
     user: str = Field("guest", alias="RABBITMQ_USER")
@@ -46,7 +46,7 @@ USER_CREATION_QUEUE_NAME = "user_creation_queue"
 rabbitmq_settings = RabbitMQSettings()
 
 
-class RedisSettings(BaseSettings, ModelConfigMixin, PortAlwaysIntegerMixin):
+class RedisSettings(BaseSettings, PortAlwaysIntegerMixin):
     host: str = Field("127.0.0.1", alias="REDIS_HOST")
     port: int = Field(6379, alias="REDIS_PORT")
     user: str = Field("default", alias="REDIS_USER")
