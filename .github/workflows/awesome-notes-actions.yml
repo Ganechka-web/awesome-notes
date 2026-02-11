@@ -144,22 +144,6 @@ jobs:
         uses: docker/setup-compose-action@v1
         
       - name: Run docker compose directly
-        env:
-          RABBITMQ_DEFAULT_USER: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_USER}}
-          RABBITMQ_DEFAULT_PASS: ${{secrets.GH_GLOBAL_DEV_RABBITMQ_DEFAULT_PASS}}
-
-          REDIS_USER: ${{secrets.GH_GLOBAL_DEV_REDIS_USER}}
-          REDIS_USER_PASSWORD: ${{secrets.GH_GLOBAL_DEV_REDIS_USER_PASSWORD}}
-          REDIS_PASSWORD: ${{secrets.GH_GLOBAL_DEV_REDIS_PASSWORD}}
-
-          PATH_TO_SSL_CERT: ${{env.ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT}}
-          PATH_TO_SSL_CERT_KEY: ${{env.ABS_GH_GLOBAL_DEV_PATH_TO_SSL_CERT_KEY}}
         run: |
-            echo "Current directory: $(pwd)"
-            echo "Environment variables:"
-            env | grep SERVICE
-            echo "Files in service1:"
-            ls -la service1
-            docker compose pull
-            docker compose up
+            docker compose --env-file config/development.env up --build
 
