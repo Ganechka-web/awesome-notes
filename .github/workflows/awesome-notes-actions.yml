@@ -155,6 +155,8 @@ jobs:
             echo Current directory is ...
             pwd
             ls -la
+            echo config/development.env:
+            cat config/development.env
             docker compose --env-file config/development.env up --build -d
 
             docker container ls
