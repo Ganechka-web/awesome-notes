@@ -53,7 +53,7 @@ services:
   user-service-db:
     image: postgres:17-alpine
     command: ["postgres","-c","port=5432"]
-    env_file: "./user_service/.env"
+    env_file: "./user_service/config/$ENVIRONMENT.env"
     volumes: 
       - user_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
@@ -63,7 +63,7 @@ services:
   notes-service-db:
     image: postgres:17-alpine
     command: ["postgres","-c","port=5433"]
-    env_file: "./notes_service/.env"
+    env_file: "./notes_service/config/$ENVIRONMENT.env"
     volumes:
       - notes_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
@@ -73,7 +73,7 @@ services:
   auth-service-db:
     image: postgres:17-alpine
     command: ["postgres","-c","port=5434"]
-    env_file: "./auth_service/.env"
+    env_file: "./auth_service/config/$ENVIRONMENT.env"
     volumes:
       - auth_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
@@ -131,9 +131,6 @@ services:
     ports: 
       - "80:80"
       - "443:443"
-    volumes:
-      - "${PATH_TO_SSL_CERT}:/etc/ssl/www.awesome-note.com+1.pem"
-      - "${PATH_TO_SSL_CERT_KEY}:/etc/ssl/www.awesome-note.com+1-key.pem"
     networks:
       - awesome-notes-network
 
