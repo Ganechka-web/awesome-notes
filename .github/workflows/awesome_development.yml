@@ -149,11 +149,11 @@ jobs:
             docker container ls
             
             echo auth env
-            docker compose exec auth-service-http /bin/sh env
+            docker compose exec auth-service-http env
             echo user env 
-            docker compose exec user-service-http /bin/sh env
+            docker compose exec user-service-http env
             echo notes env 
-            docker compose exec notes-service-http /bin/sh env
+            docker compose exec notes-service-http env
         env:
           ENVIRONMENT: development
           RABBITMQ_DEFAULT_USER: ${{secrets.DEV_AUTH_POSTGRES_USER}}
