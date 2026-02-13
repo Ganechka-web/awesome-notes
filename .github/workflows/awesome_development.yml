@@ -89,6 +89,10 @@ jobs:
         run: |
           cat auth_service/config/development.env
           # Check for missing required variables auth_service/.env
+          if [ ! -f auth_service/config/development.env ]; then
+            echo "Env file auth_service/config/development.env is missing"
+            exit 1
+          fi
           REQUIRED_VARS=("POSTGRES_USER" "POSTGRES_PASSWORD" "POSTGRES_DB" 
                          "RABBITMQ_USER" "RABBITMQ_PASSWORD" "REDIS_USER" 
                          "REDIS_USER_PASSWORD" "REDIS_PASSWORD" "ALGORITHM" "SECRET_KEY") 
@@ -99,7 +103,12 @@ jobs:
             fi
           done
 
+
           # Check for missing required variables user_service/config/development.env
+          if [ ! -f user_service/config/development.env ]; then
+            echo "Env file user_service/config/development.env is missing"
+            exit 1
+          fi
           REQUIRED_VARS=( "POSTGRES_USER" "POSTGRES_PASSWORD" 
                           "POSTGRES_DB" "RABBITMQ_USER" "RABBITMQ_PASSWORD") 
           for var in "${REQUIRED_VARS[@]}"; do
@@ -110,6 +119,10 @@ jobs:
           done
 
           # Check for missing required variables notes_service/config/development.env
+          if [ ! -f notes_service/config/development.env ]; then
+            echo "Env file notes_service/config/development.env is missing"
+            exit 1
+          fi
           REQUIRED_VARS=("POSTGRES_USER" "POSTGRES_PASSWORD" 
                          "POSTGRES_DB" "RABBITMQ_USER" "RABBITMQ_PASSWORD") 
           for var in "${REQUIRED_VARS[@]}"; do
@@ -120,6 +133,10 @@ jobs:
           done
           
           # Check for missing required variables config/development.env
+          if [ ! -f config/development.env ]; then
+            echo "Env file config/development.env is missing"
+            exit 1
+          fi
           REQUIRED_VARS=("RABBITMQ_DEFAULT_USER" "RABBITMQ_DEFAULT_PASS" "REDIS_USER" 
                          "REDIS_USER_PASSWORD" "REDIS_PASSWORD") 
           for var in "${REQUIRED_VARS[@]}"; do
