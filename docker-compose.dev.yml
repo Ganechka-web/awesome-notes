@@ -4,14 +4,33 @@ services:
     container_name: auth_service_http
     expose:
       - "8002"
-    env_file: 
-      - ./auth_service/config/common.env
-      - ./auth_service/config/$ENVIRONMENT.env
+    environment:
+      - POSTGRES_HOST=${DEV_AUTH_POSTGRES_HOST}
+      - POSTGRES_PORT=${DEV_AUTH_POSTGRES_PORT}
+      - POSTGRES_USER=${DEV_AUTH_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DEV_AUTH_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DEV_AUTH_POSTGRES_DB}
+
+      - REDIS_HOST=${DEV_REDIS_HOST}
+      - REDIS_PORT=${DEV_REDIS_PORT}
+      - REDIS_USER=${DEV_REDIS_USER}
+      - REDIS_USER_PASSWORD=${DEV_REDIS_USER_PASSWORD}
+      - REDIS_PASSWORD=${DEV_REDIS_PASSWORD}
+
+      - RABBITMQ_HOST=${DEV_RABBITMQ_HOST}
+      - RABBITMQ_PORT=${DEV_RABBITMQ_PORT}
+      - RABBITMQ_USER=${DEV_RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${DEV_RABBITMQ_PASSWORD}
+
+      - ALGORITHM=${DEV_AUTH_ALGORITHM}
+      - SECRET_KEY=${DEV_AUTH_SECRET_KEY}
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
         condition: service_healthy
-      user-service-db:
+      awesome-notes-redis:
+        condition: service_healthy
+      auth-service-db:
         condition: service_started
     networks:
       - awesome-notes-network
@@ -21,9 +40,17 @@ services:
     container_name: user_service_http
     expose: 
       - "8001"
-    env_file: 
-      - ./user_service/config/common.env
-      - ./user_service/config/$ENVIRONMENT.env
+    environment:
+      - POSTGRES_HOST=${DEV_USER_POSTGRES_HOST}
+      - POSTGRES_PORT=${DEV_USER_POSTGRES_PORT}
+      - POSTGRES_USER=${DEV_USER_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DEV_USER_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DEV_USER_POSTGRES_DB}
+
+      - RABBITMQ_HOST=${DEV_RABBITMQ_HOST}
+      - RABBITMQ_PORT=${DEV_RABBITMQ_PORT}
+      - RABBITMQ_USER=${DEV_RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${DEV_RABBITMQ_PASSWORD}
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
@@ -38,9 +65,17 @@ services:
     container_name: notes_service_http
     expose:
       - "8003"
-    env_file: 
-      - ./notes_service/config/common.env
-      - ./notes_service/config/$ENVIRONMENT.env
+    environment:
+      - POSTGRES_HOST=${DEV_NOTES_POSTGRES_HOST}
+      - POSTGRES_PORT=${DEV_NOTES_POSTGRES_PORT}
+      - POSTGRES_USER=${DEV_NOTES_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DEV_NOTES_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DEV_NOTES_POSTGRES_DB}
+
+      - RABBITMQ_HOST=${DEV_RABBITMQ_HOST}
+      - RABBITMQ_PORT=${DEV_RABBITMQ_PORT}
+      - RABBITMQ_USER=${DEV_RABBITMQ_USER}
+      - RABBITMQ_PASSWORD=${DEV_RABBITMQ_PASSWORD}
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
@@ -53,7 +88,10 @@ services:
   user-service-db:
     image: postgres:17-alpine
     command: ["postgres","-c","port=5432"]
-    env_file: "./user_service/config/$ENVIRONMENT.env"
+    environment:
+      - POSTGRES_USER=${DEV_USER_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DEV_USER_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DEV_USER_POSTGRES_DB}
     volumes: 
       - user_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
@@ -63,7 +101,10 @@ services:
   notes-service-db:
     image: postgres:17-alpine
     command: ["postgres","-c","port=5433"]
-    env_file: "./notes_service/config/$ENVIRONMENT.env"
+    environment: 
+      - POSTGRES_USER=${DEV_NOTES_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DEV_NOTES_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DEV_NOTES_POSTGRES_DB}
     volumes:
       - notes_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
@@ -73,7 +114,10 @@ services:
   auth-service-db:
     image: postgres:17-alpine
     command: ["postgres","-c","port=5434"]
-    env_file: "./auth_service/config/$ENVIRONMENT.env"
+    environment:
+      - POSTGRES_USER=${DEV_AUTH_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DEV_AUTH_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${DEV_AUTH_POSTGRES_DB}
     volumes:
       - auth_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
@@ -102,18 +146,18 @@ services:
       sh -c '
           mkdir -p /usr/local/etc/redis &&
           echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
-          echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+          echo "requirepass $DEV_REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
           echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
           echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
           echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
-          echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+          echo "user $DEV_REDIS_USER on >$DEV_REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
           redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
       '
     volumes: 
       - awesome-notes-redis:/data
     restart: on-failure 
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli --user $REDIS_USER --pass $REDIS_USER_PASSWORD PING"]
+      test: ["CMD-SHELL", "redis-cli --user $DEV_REDIS_USER --pass $DEV_REDIS_USER_PASSWORD PING"]
       interval: 30s
       timeout: 10s
       retries: 5
