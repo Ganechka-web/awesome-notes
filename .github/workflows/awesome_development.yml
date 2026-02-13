@@ -87,7 +87,6 @@ jobs:
           echo config/development.env has created successfully
       - name: Validate .env files
         run: |
-          cat auth_service/config/development.env
           # Check for missing required variables auth_service/.env
           if [ ! -f auth_service/config/development.env ]; then
             echo "Env file auth_service/config/development.env is missing"
@@ -145,6 +144,7 @@ jobs:
         
       - name: Run docker compose directly
         run: |
+            cat ./config/development.env
             docker compose --env-file ./config/development.env up --build -d
 
             docker container ls
