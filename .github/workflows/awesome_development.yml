@@ -52,10 +52,10 @@ jobs:
           ALGORITHM=${{secrets.DEV_AUTH_ALGORITHM}}
           SECRET_KEY=${{secrets.DEV_AUTH_SECRET_KEY}}
           EOF
-          echo user_service/.env has created successfully
+          echo user_service/config/development.env has created successfully
 
-          # user_service .env construction
-          cat > user_service/.env <<EOF
+          # user_service development.env construction
+          cat > user_service/config/development.env <<EOF
           POSTGRES_USER=${{secrets.DEV_USER_POSTGRES_USER}}
           POSTGRES_PASSWORD=${{secrets.DEV_USER_POSTGRES_PASSWORD}}
           POSTGRES_DB=${{secrets.DEV_USER_POSTGRES_DB}}
@@ -63,10 +63,10 @@ jobs:
           RABBITMQ_USER=${{secrets.DEV_USER_RABBITMQ_USER}}
           RABBITMQ_PASSWORD=${{secrets.DEV_USER_RABBITMQ_PASSWORD}}
           EOF
-          echo user_service/.env has created successfully
+          echo user_service/config/development.env has created successfully
 
-          # notes_service .env construction
-          cat > notes_service/.env <<EOF
+          # notes_service development.env construction
+          cat > notes_service/config/development.env <<EOF
           POSTGRES_USER=${{secrets.DEV_NOTES_POSTGRES_USER}}
           POSTGRES_PASSWORD=${{secrets.DEV_NOTES_POSTGRES_PASSWORD}}
           POSTGRES_DB=${{secrets.DEV_NOTES_POSTGRES_DB}}
@@ -74,7 +74,7 @@ jobs:
           RABBITMQ_USER=${{secrets.DEV_NOTES_RABBITMQ_USER}}
           RABBITMQ_PASSWORD=${{secrets.DEV_NOTES_RABBITMQ_PASSWORD}}
           EOF
-          echo notes_service/.env has created successfully
+          echo notes_service/config/development.env has created successfully
 
           cat > config/development.env <<EOF
           ENVIRONMENT=development
@@ -93,11 +93,9 @@ jobs:
             echo "Env file auth_service/config/development.env is missing"
             exit 1
           fi
-          REQUIRED_VARS=("POSTGRES_USER" "POSTGRES_PASSWORD" "POSTGRES_DB" 
-                         "RABBITMQ_USER" "RABBITMQ_PASSWORD" "REDIS_USER" 
-                         "REDIS_USER_PASSWORD" "REDIS_PASSWORD" "ALGORITHM" "SECRET_KEY") 
-          for var in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^$var=.+$" auth_service/config/development.env; then
+          AUTH_REQUIRED_VARS=("POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB RABBITMQ_USER RABBITMQ_PASSWORD REDIS_USER REDIS_USER_PASSWORD REDIS_PASSWORD ALGORITHM SECRET_KEY") 
+          for var in $AUTH_REQUIRED_VARS; do
+            if ! grep -qE "^$var=.+$" auth_service/config/development.env; then
               echo "Error: Missing required variable $var in auth_service/config/development.env"
               exit 1
             fi
@@ -109,10 +107,9 @@ jobs:
             echo "Env file user_service/config/development.env is missing"
             exit 1
           fi
-          REQUIRED_VARS=( "POSTGRES_USER" "POSTGRES_PASSWORD" 
-                          "POSTGRES_DB" "RABBITMQ_USER" "RABBITMQ_PASSWORD") 
-          for var in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^$var=.+$" user_service/config/development.env; then
+          USER_REQUIRED_VARS=("POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB RABBITMQ_USER RABBITMQ_PASSWORD") 
+          for var in $USER_REQUIRED_VARS; do
+            if ! grep -qE "^$var=.+$" user_service/config/development.env; then
               echo "Error: Missing required variable $var in user_service/config/development.env"
               exit 1
             fi
@@ -123,10 +120,9 @@ jobs:
             echo "Env file notes_service/config/development.env is missing"
             exit 1
           fi
-          REQUIRED_VARS=("POSTGRES_USER" "POSTGRES_PASSWORD" 
-                         "POSTGRES_DB" "RABBITMQ_USER" "RABBITMQ_PASSWORD") 
-          for var in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^$var=.+$" notes_service/config/development.env; then
+          NOTES_REQUIRED_VARS=("POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB RABBITMQ_USER RABBITMQ_PASSWORD") 
+          for var in $NOTES_REQUIRED_VARS; do
+            if ! grep -qE "^$var=.+$" notes_service/config/development.env; then
               echo "Error: Missing required variable $var in notes_service/config/development.env"
               exit 1
             fi
@@ -137,10 +133,9 @@ jobs:
             echo "Env file config/development.env is missing"
             exit 1
           fi
-          REQUIRED_VARS=("RABBITMQ_DEFAULT_USER" "RABBITMQ_DEFAULT_PASS" "REDIS_USER" 
-                         "REDIS_USER_PASSWORD" "REDIS_PASSWORD") 
-          for var in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^$var=.+$" config/development.env; then
+          GLOBAL_REQUIRED_VARS=("RABBITMQ_DEFAULT_USER RABBITMQ_DEFAULT_PASS REDIS_USER REDIS_USER_PASSWORD REDIS_PASSWORD") 
+          for var in $GLOBAL_REQUIRED_VARS; do
+            if ! grep -qE "^$var=.+$" config/development.env; then
               echo "Error: Missing required variable $var in config/development.env"
               exit 1
             fi
