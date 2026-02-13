@@ -155,11 +155,11 @@ jobs:
             echo notes env 
             docker compose exec notes-service-http /bin/sh env
         env:
-          ENVIRONMENT=development
-          RABBITMQ_DEFAULT_USER=${{secrets.DEV_AUTH_POSTGRES_USER}}
-          RABBITMQ_DEFAULT_PASS=${{secrets.DEV_AUTH_POSTGRES_PASSWORD}}
-          REDIS_USER=${{secrets.DEV_AUTH_REDIS_USER}}
-          REDIS_USER_PASSWORD=${{secrets.DEV_AUTH_REDIS_USER_PASSWORD}}
-          REDIS_PASSWORD=${{secrets.DEV_AUTH_REDIS_PASSWORD}}
+          ENVIRONMENT: development
+          RABBITMQ_DEFAULT_USER: ${{secrets.DEV_AUTH_POSTGRES_USER}}
+          RABBITMQ_DEFAULT_PASS: ${{secrets.DEV_AUTH_POSTGRES_PASSWORD}}
+          REDIS_USER: ${{secrets.DEV_AUTH_REDIS_USER}}
+          REDIS_USER_PASSWORD: ${{secrets.DEV_AUTH_REDIS_USER_PASSWORD}}
+          REDIS_PASSWORD: ${{secrets.DEV_AUTH_REDIS_PASSWORD}}
 
 
