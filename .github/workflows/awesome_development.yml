@@ -144,7 +144,7 @@ jobs:
         
       - name: Run docker compose directly
         run: |
-            docker compose up --build -d
+            docker compose up --build
 
             docker container ls
             
