@@ -89,7 +89,7 @@ jobs:
         run: |
           # Check for missing required variables auth_service/.env
           REQUIRED_VARS=("POSTGRES_USER" "POSTGRES_PASSWORD" "POSTGRES_DB" 
-                         "RABBITMQ_USER" RABBITMQ_PASSWORD" "REDIS_USER" 
+                         "RABBITMQ_USER" "RABBITMQ_PASSWORD" "REDIS_USER" 
                          "REDIS_USER_PASSWORD" "REDIS_PASSWORD" "ALGORITHM" "SECRET_KEY") 
           for var in "${REQUIRED_VARS[@]}"; do
             if ! grep -q "^$var=.+$" auth_service/config/development.env; then
