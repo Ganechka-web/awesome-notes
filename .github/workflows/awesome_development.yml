@@ -54,6 +54,13 @@ jobs:
               sleep 10
             done
             echo "Services is healthy"
+
+            while [ $(docker compose -f docker-compose.dev.yml logs | grep "Application startup complete." | wc -l) -lt 3 ]; 
+            do 
+              echo "Waiting for micro-services to start up"
+              sleep 10
+            done
+            echo "Micro-services has started up"
         env:
           ENVIRONMENT: development
           DEV_RABBITMQ_HOST: ${{secrets.DEV_RABBITMQ_HOST}}
@@ -89,7 +96,3 @@ jobs:
       - name: Docker compose cleanup
         run: |
             docker compose -f docker-compose.dev.yml down
-
-
-
-
