@@ -39,16 +39,24 @@ jobs:
         
       - name: Run docker compose directly
         run: |
-            docker compose -f docker-compose.dev.yml up --build
+            docker compose -f docker-compose.dev.yml up --build -d
 
-            docker container ls
+            while [ $(docker compose -f docker-compose.dev.yml ps | grep "Up" | wc -l) -lt 9 ];           
+            do 
+              echo "Waiting for services..."
+              sleep 10
+            done
+            echo "All service Up"
             
-            echo auth env
-            docker compose exec auth-service-http env
-            echo user env 
-            docker compose exec user-service-http env
-            echo notes env 
-            docker compose exec notes-service-http env
+            while [ $(docker compose -f docker-compose.dev.yml ps | grep "(healthy)" | wc -l) -lt 5 ];
+            do 
+              echo "Waiting for healthy services..."
+              sleep 10
+            done
+            echo "Services is healthy"
+      - name: Docker compose cleanup
+        run: |
+            docker compose -f docker-compose.dev.yml down
         env:
           ENVIRONMENT: development
           DEV_RABBITMQ_HOST: ${{secrets.DEV_RABBITMQ_HOST}}
