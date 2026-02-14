@@ -128,6 +128,8 @@ services:
     image: rabbitmq:4.1-management-alpine
     hostname: awesome-notes-rabbitmq
     environment:
+      - RABBITMQ_DEFAULT_USER=${DEV_RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${DEV_RABBITMQ_PASSWORD}
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
     volumes: 
       - awesome-notes_rabbitmq_data:/var/lib/rabbitmq
@@ -157,7 +159,7 @@ services:
       - awesome-notes-redis:/data
     restart: on-failure 
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli --user $DEV_REDIS_USER --pass $DEV_REDIS_USER_PASSWORD PING"]
+      test: ["CMD-SHELL", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 5
