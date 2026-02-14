@@ -39,7 +39,7 @@ jobs:
         
       - name: Run docker compose directly
         run: |
-            docker compose up -f docker-compose.dev.yml --build
+            docker compose -f docker-compose.dev.yml up --build
 
             docker container ls
             
