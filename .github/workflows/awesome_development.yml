@@ -1,0 +1,98 @@
+name: Awesome-notes actions
+
+on:
+  push:
+    branches:
+      - main
+      - dev 
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  services-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Test services
+      run: |
+          echo Testing auth_service....
+          cd auth_service/ && python3 -m pip install -r requirements.txt && python3 -m pytest
+          echo Testing user_service....
+          cd ../user_service/ && python3 -m pip install -r requirements.txt && python3 -m pytest
+          echo Testing notes_service....
+          cd ../notes_service/ && python3 -m pip install -r requirements.txt && python3 -m pytest
+    
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: development
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up docker compose
+        uses: docker/setup-compose-action@v1
+        
+      - name: Run docker compose directly
+        run: |
+            docker compose -f docker-compose.dev.yml up --build -d
+
+            while [ $(docker compose -f docker-compose.dev.yml ps | grep "Up" | wc -l) -lt 9 ];           
+            do 
+              echo "Waiting for services..."
+              sleep 10
+            done
+            echo "All service Up"
+            
+            while [ $(docker compose -f docker-compose.dev.yml ps | grep "(healthy)" | wc -l) -lt 5 ];
+            do 
+              echo "Waiting for healthy services..."
+              sleep 10
+            done
+            echo "Services is healthy"
+
+            while [ $(docker compose -f docker-compose.dev.yml logs | grep "Application startup complete." | wc -l) -lt 3 ]; 
+            do 
+              echo "Waiting for micro-services to start up"
+              sleep 10
+            done
+            echo "Micro-services has started up"
+        env:
+          ENVIRONMENT: development
+          DEV_RABBITMQ_HOST: ${{secrets.DEV_RABBITMQ_HOST}}
+          DEV_RABBITMQ_PORT: ${{secrets.DEV_RABBITMQ_PORT}}
+          DEV_RABBITMQ_USER: ${{secrets.DEV_RABBITMQ_USER}}
+          DEV_RABBITMQ_PASSWORD: ${{secrets.DEV_RABBITMQ_PASSWORD}}
+          DEV_REDIS_HOST: ${{secrets.DEV_REDIS_HOST}}
+          DEV_REDIS_PORT: ${{secrets.DEV_REDIS_PORT}}
+          DEV_REDIS_USER: ${{secrets.DEV_REDIS_USER}}
+          DEV_REDIS_USER_PASSWORD: ${{secrets.DEV_REDIS_USER_PASSWORD}}
+          DEV_REDIS_PASSWORD: ${{secrets.DEV_REDIS_PASSWORD}}
+
+          DEV_AUTH_POSTGRES_HOST: ${{secrets.DEV_AUTH_POSTGRES_HOST}}
+          DEV_AUTH_POSTGRES_PORT: ${{secrets.DEV_AUTH_POSTGRES_PORT}}
+          DEV_AUTH_POSTGRES_USER: ${{secrets.DEV_AUTH_POSTGRES_USER}}
+          DEV_AUTH_POSTGRES_PASSWORD: ${{secrets.DEV_AUTH_POSTGRES_PASSWORD}}
+          DEV_AUTH_POSTGRES_DB: ${{secrets.DEV_AUTH_POSTGRES_DB}}
+          DEV_AUTH_ALGORITHM: ${{secrets.DEV_AUTH_ALGORITHM}}
+          DEV_AUTH_SECRET_KEY: ${{secrets.DEV_AUTH_SECRET_KEY}}
+
+          DEV_USER_POSTGRES_HOST: ${{secrets.DEV_USER_POSTGRES_HOST}}
+          DEV_USER_POSTGRES_PORT: ${{secrets.DEV_USER_POSTGRES_PORT}}
+          DEV_USER_POSTGRES_USER: ${{secrets.DEV_USER_POSTGRES_USER}}
+          DEV_USER_POSTGRES_PASSWORD: ${{secrets.DEV_USER_POSTGRES_PASSWORD}}
+          DEV_USER_POSTGRES_DB: ${{secrets.DEV_USER_POSTGRES_DB}}
+
+          DEV_NOTES_POSTGRES_HOST: ${{secrets.DEV_NOTES_POSTGRES_HOST}}
+          DEV_NOTES_POSTGRES_PORT: ${{secrets.DEV_NOTES_POSTGRES_PORT}}
+          DEV_NOTES_POSTGRES_USER: ${{secrets.DEV_NOTES_POSTGRES_USER}}
+          DEV_NOTES_POSTGRES_PASSWORD: ${{secrets.DEV_NOTES_POSTGRES_PASSWORD}}
+          DEV_NOTES_POSTGRES_DB: ${{secrets.DEV_NOTES_POSTGRES_DB}}
+          
+      - name: Docker compose cleanup
+        run: |
+            docker compose -f docker-compose.dev.yml down

@@ -138,6 +138,7 @@ venv.bak/
 .rabbitmq.env
 development.env
 .env.local
+.act.secrets.env
 
 # Spyder project settings
 .spyderproject
