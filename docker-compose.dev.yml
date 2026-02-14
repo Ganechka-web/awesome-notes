@@ -95,6 +95,11 @@ services:
     volumes: 
       - user_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p ${DEV_USER_POSTGRES_PORT} -U $DEV_USER_POSTGRES_USER -d $DEV_USER_POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - awesome-notes-network
 
@@ -108,6 +113,11 @@ services:
     volumes:
       - notes_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p ${DEV_NOTES_POSTGRES_PORT} -U $DEV_NOTES_POSTGRES_USER -d $DEV_NOTES_POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - awesome-notes-network
 
@@ -121,6 +131,11 @@ services:
     volumes:
       - auth_async_service_postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p ${DEV_AUTH_POSTGRES_PORT} -U $DEV_AUTH_POSTGRES_USER -d $DEV_AUTH_POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - awesome-notes-network
 
