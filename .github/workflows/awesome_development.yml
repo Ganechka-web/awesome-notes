@@ -34,117 +34,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
 
-      - name: Construction services`s .env files
-        run: | 
-          # auth_service development.env construction
-          cat > auth_service/config/development.env <<EOF
-          POSTGRES_USER=${{secrets.DEV_AUTH_POSTGRES_USER}}
-          POSTGRES_PASSWORD=${{secrets.DEV_AUTH_POSTGRES_PASSWORD}}
-          POSTGRES_DB=${{secrets.DEV_AUTH_POSTGRES_DB}}
-
-          RABBITMQ_USER=${{secrets.DEV_AUTH_RABBITMQ_USER}}
-          RABBITMQ_PASSWORD=${{secrets.DEV_AUTH_RABBITMQ_PASSWORD}}
-    
-          REDIS_USER=${{secrets.DEV_AUTH_REDIS_USER}}
-          REDIS_USER_PASSWORD=${{secrets.DEV_AUTH_REDIS_USER_PASSWORD}}
-          REDIS_PASSWORD=${{secrets.DEV_AUTH_REDIS_PASSWORD}}
-
-          ALGORITHM=${{secrets.DEV_AUTH_ALGORITHM}}
-          SECRET_KEY=${{secrets.DEV_AUTH_SECRET_KEY}}
-          EOF
-          echo user_service/config/development.env has created successfully
-
-          # user_service development.env construction
-          cat > user_service/config/development.env <<EOF
-          POSTGRES_USER=${{secrets.DEV_USER_POSTGRES_USER}}
-          POSTGRES_PASSWORD=${{secrets.DEV_USER_POSTGRES_PASSWORD}}
-          POSTGRES_DB=${{secrets.DEV_USER_POSTGRES_DB}}
-    
-          RABBITMQ_USER=${{secrets.DEV_USER_RABBITMQ_USER}}
-          RABBITMQ_PASSWORD=${{secrets.DEV_USER_RABBITMQ_PASSWORD}}
-          EOF
-          echo user_service/config/development.env has created successfully
-
-          # notes_service development.env construction
-          cat > notes_service/config/development.env <<EOF
-          POSTGRES_USER=${{secrets.DEV_NOTES_POSTGRES_USER}}
-          POSTGRES_PASSWORD=${{secrets.DEV_NOTES_POSTGRES_PASSWORD}}
-          POSTGRES_DB=${{secrets.DEV_NOTES_POSTGRES_DB}}
-    
-          RABBITMQ_USER=${{secrets.DEV_NOTES_RABBITMQ_USER}}
-          RABBITMQ_PASSWORD=${{secrets.DEV_NOTES_RABBITMQ_PASSWORD}}
-          EOF
-          echo notes_service/config/development.env has created successfully
-
-          # cat > config/development.env <<EOF
-          # ENVIRONMENT=development
-          # RABBITMQ_DEFAULT_USER=${{secrets.DEV_AUTH_RABBITMQ_USER}}
-          # RABBITMQ_DEFAULT_PASS=${{secrets.DEV_AUTH_RABBITMQ_PASSWORD}}
-          # REDIS_USER=${{secrets.DEV_AUTH_REDIS_USER}}
-          # REDIS_USER_PASSWORD=${{secrets.DEV_AUTH_REDIS_USER_PASSWORD}}
-          # REDIS_PASSWORD=${{secrets.DEV_AUTH_REDIS_PASSWORD}}
-          # EOF
-          # echo config/development.env has created successfully
-      - name: Validate .env files
-        run: |
-          # Check for missing required variables auth_service/.env
-          if [ ! -f auth_service/config/development.env ]; then
-            echo "Env file auth_service/config/development.env is missing"
-            exit 1
-          fi
-          AUTH_REQUIRED_VARS=("POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB RABBITMQ_USER RABBITMQ_PASSWORD REDIS_USER REDIS_USER_PASSWORD REDIS_PASSWORD ALGORITHM SECRET_KEY") 
-          for var in $AUTH_REQUIRED_VARS; do
-            if ! grep -qE "^$var=.+$" auth_service/config/development.env; then
-              echo "Error: Missing required variable $var in auth_service/config/development.env"
-              exit 1
-            fi
-          done
-
-
-          # Check for missing required variables user_service/config/development.env
-          if [ ! -f user_service/config/development.env ]; then
-            echo "Env file user_service/config/development.env is missing"
-            exit 1
-          fi
-          USER_REQUIRED_VARS=("POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB RABBITMQ_USER RABBITMQ_PASSWORD") 
-          for var in $USER_REQUIRED_VARS; do
-            if ! grep -qE "^$var=.+$" user_service/config/development.env; then
-              echo "Error: Missing required variable $var in user_service/config/development.env"
-              exit 1
-            fi
-          done
-
-          # Check for missing required variables notes_service/config/development.env
-          if [ ! -f notes_service/config/development.env ]; then
-            echo "Env file notes_service/config/development.env is missing"
-            exit 1
-          fi
-          NOTES_REQUIRED_VARS=("POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB RABBITMQ_USER RABBITMQ_PASSWORD") 
-          for var in $NOTES_REQUIRED_VARS; do
-            if ! grep -qE "^$var=.+$" notes_service/config/development.env; then
-              echo "Error: Missing required variable $var in notes_service/config/development.env"
-              exit 1
-            fi
-          done
-          
-          # # Check for missing required variables config/development.env
-          # if [ ! -f config/development.env ]; then
-          #   echo "Env file config/development.env is missing"
-          #   exit 1
-          # fi
-          # GLOBAL_REQUIRED_VARS=("RABBITMQ_DEFAULT_USER RABBITMQ_DEFAULT_PASS REDIS_USER REDIS_USER_PASSWORD REDIS_PASSWORD") 
-          # for var in $GLOBAL_REQUIRED_VARS; do
-          #   if ! grep -qE "^$var=.+$" config/development.env; then
-          #     echo "Error: Missing required variable $var in config/development.env"
-          #     exit 1
-          #   fi
-          # done
       - name: Set up docker compose
         uses: docker/setup-compose-action@v1
         
       - name: Run docker compose directly
         run: |
-            docker compose up --build
+            docker compose up -f docker-compose.dev.yml --build
 
             docker container ls
             
@@ -156,10 +51,36 @@ jobs:
             docker compose exec notes-service-http env
         env:
           ENVIRONMENT: development
-          RABBITMQ_DEFAULT_USER: ${{secrets.DEV_AUTH_POSTGRES_USER}}
-          RABBITMQ_DEFAULT_PASS: ${{secrets.DEV_AUTH_POSTGRES_PASSWORD}}
-          REDIS_USER: ${{secrets.DEV_AUTH_REDIS_USER}}
-          REDIS_USER_PASSWORD: ${{secrets.DEV_AUTH_REDIS_USER_PASSWORD}}
-          REDIS_PASSWORD: ${{secrets.DEV_AUTH_REDIS_PASSWORD}}
+          DEV_RABBITMQ_HOST: ${{secrets.DEV_RABBITMQ_HOST}}
+          DEV_RABBITMQ_PORT: ${{secrets.DEV_RABBITMQ_PORT}}
+          DEV_RABBITMQ_USER: ${{secrets.DEV_RABBITMQ_USER}}
+          DEV_RABBITMQ_PASSWORD: ${{secrets.DEV_RABBITMQ_PASSWORD}}
+          DEV_REDIS_HOST: ${{secrets.DEV_REDIS_HOST}}
+          DEV_REDIS_PORT: ${{secrets.DEV_REDIS_PORT}}
+          DEV_REDIS_USER: ${{secrets.DEV_REDIS_USER}}
+          DEV_REDIS_USER_PASSWORD: ${{secrets.DEV_REDIS_USER_PASSWORD}}
+          DEV_REDIS_PASSWORD: ${{secrets.DEV_REDIS_PASSWORD}}
+
+          DEV_AUTH_POSTGRES_HOST: ${{secrets.DEV_AUTH_POSTGRES_HOST}}
+          DEV_AUTH_POSTGRES_PORT: ${{secrets.DEV_AUTH_POSTGRES_PORT}}
+          DEV_AUTH_POSTGRES_USER: ${{secrets.DEV_AUTH_POSTGRES_USER}}
+          DEV_AUTH_POSTGRES_PASSWORD: ${{secrets.DEV_AUTH_POSTGRES_PASSWORD}}
+          DEV_AUTH_POSTGRES_DB: ${{secrets.DEV_AUTH_POSTGRES_DB}}
+          DEV_AUTH_ALGORITHM: ${{secrets.DEV_AUTH_ALGORITHM}}
+          DEV_AUTH_SECRET_KEY: ${{secrets.DEV_AUTH_SECRET_KEY}}
+
+          DEV_USER_POSTGRES_HOST: ${{secrets.DEV_USER_POSTGRES_HOST}}
+          DEV_USER_POSTGRES_PORT: ${{secrets.DEV_USER_POSTGRES_PORT}}
+          DEV_USER_POSTGRES_USER: ${{secrets.DEV_USER_POSTGRES_USER}}
+          DEV_USER_POSTGRES_PASSWORD: ${{secrets.DEV_USER_POSTGRES_PASSWORD}}
+          DEV_USER_POSTGRES_DB: ${{secrets.DEV_USER_POSTGRES_DB}}
+
+          DEV_NOTES_POSTGRES_HOST: ${{secrets.DEV_NOTES_POSTGRES_HOST}}
+          DEV_NOTES_POSTGRES_PORT: ${{secrets.DEV_NOTES_POSTGRES_PORT}}
+          DEV_NOTES_POSTGRES_USER: ${{secrets.DEV_NOTES_POSTGRES_USER}}
+          DEV_NOTES_POSTGRES_PASSWORD: ${{secrets.DEV_NOTES_POSTGRES_PASSWORD}}
+          DEV_NOTES_POSTGRES_DB: ${{secrets.DEV_NOTES_POSTGRES_DB}}
+
+
 
 
