@@ -10,6 +10,7 @@ This is a API for writting notes in MarkDown format, it allows create users and 
 The general development purposes:
 -  Learning FastAPI framework
 -  Learning auth systems in microservices 
+-  Learning CI/CD
 -  Writting code in better architecture style as close as possible to real prodaction development 
 -  Researching microservices architecture style and communications among micriservices
 -  Improving testing style and quality
@@ -49,13 +50,22 @@ Project is based on isolated microservices which have got their own database and
 
 1. Copy this repo and cd to it
 
-2. Next you need to create and fill .env files, follow .env.example which store in `/config`, `auth_service/`, `user_service/` and `notes/service/` dirs.
+```bash
+git copy <repo_url>
+cd awesome-notes/
+```
 
-3. Next step is cd to `awesome-notes/` and run following code for launching docker-compose project
+2. Next you need to create and fill config/development.env files, follow config/development.env.example which store in `/config`, or you can excecute following command to use test variables
 
 ```bash
-docker compose --env-file config/development.env up --build
-``` 
+cp config/development.env.example config/development.env
+```
+
+3. Finally execute following command to start project
+
+```bash
+docker compose -f docker-compose.dev.yml --env-file config/development.env up --build
+```
 
 4. Open your browser and follow one of these urls:
 - `https://awesome-notes.com/auth/docs`: for auth service api docs
