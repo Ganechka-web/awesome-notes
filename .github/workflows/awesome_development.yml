@@ -54,9 +54,6 @@ jobs:
               sleep 10
             done
             echo "Services is healthy"
-      - name: Docker compose cleanup
-        run: |
-            docker compose -f docker-compose.dev.yml down
         env:
           ENVIRONMENT: development
           DEV_RABBITMQ_HOST: ${{secrets.DEV_RABBITMQ_HOST}}
@@ -88,6 +85,10 @@ jobs:
           DEV_NOTES_POSTGRES_USER: ${{secrets.DEV_NOTES_POSTGRES_USER}}
           DEV_NOTES_POSTGRES_PASSWORD: ${{secrets.DEV_NOTES_POSTGRES_PASSWORD}}
           DEV_NOTES_POSTGRES_DB: ${{secrets.DEV_NOTES_POSTGRES_DB}}
+          
+      - name: Docker compose cleanup
+        run: |
+            docker compose -f docker-compose.dev.yml down
 
 
 
