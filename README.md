@@ -2,20 +2,27 @@
     <img src="images/awesome-notes-logo.png">
 </p>
 
+<div align="center">
+
+[![CI/CD](https://github.com/Ganechka-web/awesome-notes/actions/workflows/awesome_development.yml/badge.svg)](https://github.com/Ganechka-web/awesome-notes/actions)
+
+</div>
 
 # Awesome-notes
 
-This is a API for writting notes in MarkDown format, it allows create users and notes, provides API Geteway authentification system
+A REST API for writing notes in Markdown format with user management and JWT-based authentication via API Gateway
 
-The general development purposes:
--  Learning FastAPI framework
--  Learning auth systems in microservices 
--  Learning CI/CD
--  Writting code in better architecture style as close as possible to real prodaction development 
--  Researching microservices architecture style and communications among micriservices
--  Improving testing style and quality
+## Key features :sparkles: 
 
-And it was just interesting as well)
+- Fully async, isolated microservices based on FastAPI framework with dedicated PostgreSQL databases
+- JWT authentication via API Gateway (Nginx) with Redis token storage
+- Async microservices communication via RabbitMQ
+- API Gateway routing via Nginx
+- Unit and integration tests with more than 90% coverage
+- CI/CD via GitHub Actions
+- Onion-like structure in each microservice
+- Fully automated and optimized project startup via docker-compose
+ 
 
 ## Tech stack  :wrench:
 - languages and frameworks:
@@ -43,19 +50,39 @@ Project is based on isolated microservices which have got their own database and
 - **Auth service**: service for authentication and also user`s and credentials creating
 - **DBs**: each service have got their own database 
 - **Redis**: using for refresh token store
-- **RabbitMQ**: main communicatintg point among microservices
+- **RabbitMQ**: main communication point among microservices
 
 
-## Instalation :fire:
+## Running tests :test_tube:
+
+To run services' tests you should run the scripts/testing.sh which will use docker-compose.test.yml, special compose project for testing proposes 
+
+- :penguin: Linux 
+
+```bash
+# awesome-notes/
+chmod +x ./scripts/testing.sh
+./scripts/testing.sh
+```
+
+- :window: Windows
+ 
+Follow this **[guide](https://www.thewindowsclub.com/how-to-run-sh-or-shell-script-file-in-windows-10)** for executing bash scripts on Windows and then execute following command in your shell
+
+```bash
+bash scripts/testing.sh
+```
+
+## Quick start :fire:
 
 1. Copy this repo and cd to it
 
 ```bash
-git copy <repo_url>
+git clone <repo_url>
 cd awesome-notes/
 ```
 
-2. Next you need to create and fill config/development.env files, follow config/development.env.example which store in `/config`, or you can excecute following command to use test variables
+2. Next you need to create and fill config/development.env files, follow config/development.env.example stored in the `/config` directory, or you can execute following command to use test variables
 
 ```bash
 cp config/development.env.example config/development.env
@@ -68,7 +95,79 @@ docker compose -f docker-compose.dev.yml --env-file config/development.env up --
 ```
 
 4. Open your browser and follow one of these urls:
-- `https://awesome-notes.com/auth/docs`: for auth service api docs
-- `https://awesome-notes.com/user/docs`: for user service api docs
-- `https://awesome-notes.com/notes/docs`: for notes service api docs
+- `http://localhost:8000/auth/docs`: for auth service api docs
+- `http://localhost:8000/user/docs`: for user service api docs
+- `http://localhost:8000/note/docs`: for notes service api docs
 
+5. Or if you want to use canonical project version add this to your hosts file:
+  
+- :penguin: On Linux edit `/etc/hosts` **as root**
+
+```
+127.0.0.1	awesome-notes.com
+```
+
+- :window: On Windows edit `C:\Windows\System32\drivers\etc\hosts` **as Administrator**
+
+```
+127.0.0.1   awesome-notes.com
+```
+
+And instead of using http://localhost:8000 you are able to use https://awesome-notes.com/
+
+## API Workflow Example :microscope:
+
+- User creation:
+  - Output: Created user UUID
+  - Action: auth_service requests user_service to create user according user_data, gets created_user_id from user_service and then saves login and password with the same uuid
+
+```bash
+curl -X POST http://localhost:800/auth/register/ \
+    -H "Content-Type: application/json" \
+    -d '{"login":"awesome_login","password":"1234","user_data":{"username":"Maksim","gender":"male","age":"21"}}'
+```
+
+- User log-in:
+  - Output: JWT token
+  - Action: auth_service generates access and refresh tokens, returns access, sets access_token cookie and saves refresh token in Redis with ttl
+
+```bash
+curl -X POST http://localhost:8000/auth/login/ \
+     -H "Content-Type: application/json" \
+     -d '{"login":"awesome_login","password":"1234"}'
+```
+
+- Getting the Created user
+  - Output: User json schema
+
+```bash
+curl -X GET http://localhost:8000/user/by-id/<your_created_user_uuid> \
+    -b "access_token=<your_jwt_token>"
+```
+
+- User's note creation:
+  - Output: Created note UUID
+
+```bash
+curl -X POST http://localhost:8000/note/create/ \
+    -b "access_token=<your_jwt_token>" \
+    -H "Content-Type: application/json" \
+    -d '{"title":"My daily routine","content":"- Running\n- Training\n- Eating","owner_id":"<your_created_user_uuid>"}'
+```
+
+- All user's notes
+  - Output: List of user's notes
+
+```bash
+curl -X GET http://localhost:8000/note/by-owner-id/<your_created_user_uuid> \
+    -b "access_token=<your_jwt_token>"
+```
+
+- User deletion
+  - Output: nothing with 204 status code
+  - Action: user_service requests note_service to delete all user's notes by uuid and then deletes user
+  
+```bash
+curl -X DELETE http://localhost:8000/user/delete/<your_created_user_uuid> \
+    -b "access_token=<your_jwt_token>"
+```
