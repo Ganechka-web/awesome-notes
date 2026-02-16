@@ -4,7 +4,7 @@
 
 <div align="center">
 
-[![CI/CD](https://github.com/Ganechka-web/awesome-notes/actions/workflows/awesome_development.yml/badge.svg)](https://github.com/Ganechka-web/awesome-notes/actions)
+[![CI/CD](https://github.com/Ganechka-web/awesome-notes/actions/workflows/awesome_development.yml/badge.svg)](https://github.com/Ganechka-web/awesome-notes/actions) ![coverage](https://img.shields.io/badge/auth_service%20coverage-96%25-green) ![coverage](https://img.shields.io/badge/user_service%20coverage-95%25-green) ![coverage](https://img.shields.io/badge/notes_service%20coverage-98%25-green)
 
 </div>
 
