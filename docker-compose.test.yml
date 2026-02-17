@@ -1,0 +1,40 @@
+services:
+  auth-service-http-test:
+    build: ./auth_service
+    command: ["sleep", "3600"]
+    container_name: auth_service_http_testing
+    expose:
+      - "8002"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - awesome-notes-testing-network
+  
+  user-service-http-test:
+    build: ./user_service
+    command: ["sleep", "3600"]
+    container_name: user_service_http_testing
+    expose: 
+      - "8001"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - awesome-notes-testing-network
+  
+  notes-service-http-test:
+    build: ./notes_service
+    command: ["sleep", "3600"]
+    container_name: notes_service_http_testing
+    expose:
+      - "8003"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - awesome-notes-testing-network
+
+networks:
+  awesome-notes-testing-network:
+    driver: bridge

@@ -182,7 +182,9 @@ services:
       - awesome-notes-network
 
   awesome-notes-nginx:
-    build: ./nginx/
+    build: 
+      context: ./nginx/
+      network: host
     container_name: awesome-notes-nginx
     depends_on:
       - auth-service-http
