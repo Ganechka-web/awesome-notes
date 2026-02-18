@@ -346,7 +346,9 @@ class TestUserService:
         with pytest.raises(UnableToConnectToBrokerError):
             await user_service.delete_one(id=usr_on_delete_id)
 
-            mock_user_repository.get_one_by_id.assert_awaited_once_with(id=usr_on_delete_id)
+            mock_user_repository.get_one_by_id.assert_awaited_once_with(
+                id=usr_on_delete_id
+            )
             mock_user_broker.publish.assert_awaited_once()
 
             called_publish_data = mock_user_broker.publish.call_args.kwargs["data"]

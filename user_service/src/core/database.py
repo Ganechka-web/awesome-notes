@@ -19,7 +19,9 @@ class AsyncDatabase:
             password=password,
             database=db,
         )
-        self.async_engine: AsyncEngine = create_async_engine(self.postgres_dcn, echo=True)
+        self.async_engine: AsyncEngine = create_async_engine(
+            self.postgres_dcn, echo=True
+        )
         self.session: AsyncSession | None = None
         logger.info("Database is connected and ready to execute queries")
 

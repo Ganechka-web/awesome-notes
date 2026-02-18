@@ -10,7 +10,6 @@ from src.exceptions.services import UserNotFoundError, UserAlreadyExistsError
 from src.services.user import UserService
 from src.shemas.user import UserOutputShema, UserUpgrateShema, UserCreateShema
 
-
 users_router = APIRouter()
 
 

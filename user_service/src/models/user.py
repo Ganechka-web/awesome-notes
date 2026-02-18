@@ -24,7 +24,9 @@ class User(Base):
     age: Mapped[int] = mapped_column(SmallInteger)
 
     joined_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.now(timezone.utc), server_default=FetchedValue()
+        DateTime(timezone=True),
+        default=datetime.now(timezone.utc),
+        server_default=FetchedValue(),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

@@ -9,7 +9,7 @@ from alembic import context
 
 from src.core.settings import postgres_settings
 from src.core.database import Base
-from src.models.user import User # noqa
+from src.models.user import User  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
