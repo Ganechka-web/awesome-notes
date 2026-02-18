@@ -38,13 +38,17 @@ class Container(containers.DeclarativeContainer):
     )
 
     auth_repository = providers.Factory(AuthRepository, database=auth_database)
-    redis_token_repository = providers.Factory(RedisTokenRepository, auth_redis=auth_redis)
+    redis_token_repository = providers.Factory(
+        RedisTokenRepository, auth_redis=auth_redis
+    )
     user_creation_rpc_client = providers.Factory(
         UserCreationRPCClient,
         broker=auth_broker,
     )
     password_service = providers.Factory(SecurityPasswordService)
-    token_service = providers.Factory(JWTTokenService, token_repository=redis_token_repository)
+    token_service = providers.Factory(
+        JWTTokenService, token_repository=redis_token_repository
+    )
     auth_service = providers.Factory(
         AuthService,
         repository=auth_repository,

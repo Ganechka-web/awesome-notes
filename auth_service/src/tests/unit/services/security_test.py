@@ -22,7 +22,5 @@ def test_verify_password_hash(
     password_service: "SecurityPasswordService",
 ):
     bare_password_hash = password_service.generate_password_hash(bare_password)
-    result = password_service.verify_password_hash(
-        bare_password_2, bare_password_hash
-    )
+    result = password_service.verify_password_hash(bare_password_2, bare_password_hash)
     assert result == expectation

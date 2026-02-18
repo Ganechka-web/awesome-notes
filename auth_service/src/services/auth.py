@@ -162,11 +162,16 @@ class JWTTokenService(Service):
     def _create_token(self, payload: dict[str, Any]) -> str:
         """Creates signed token with payload"""
         return jwt.encode(payload, self.sign, algorithm=self.algorithm)
-         
+
     def _get_payload(self, token: str, verify_exp: bool = False) -> dict[str, Any]:
         """Tries to get token`s payload"""
         try:
-            return jwt.decode(token, key=self.sign, algorithms=self.algorithm, options={"verify_exp": verify_exp})
+            return jwt.decode(
+                token,
+                key=self.sign,
+                algorithms=self.algorithm,
+                options={"verify_exp": verify_exp},
+            )
         except jwt.DecodeError as e:
             raise InvalidTokenError("Unable to decode the token") from e
         except jwt.ExpiredSignatureError as e:
@@ -222,7 +227,10 @@ class JWTTokenService(Service):
             refresh_payload = self._get_payload(refresh_token)
 
             # refresh token is valid
-            if datetime.fromtimestamp(refresh_payload["exp"], tz=timezone.utc) > current:
+            if (
+                datetime.fromtimestamp(refresh_payload["exp"], tz=timezone.utc)
+                > current
+            ):
                 return self._create_token(
                     payload={
                         "sub": refresh_payload["sub"],

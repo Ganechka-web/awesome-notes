@@ -3,7 +3,12 @@ import uvicorn
 from fastapi import FastAPI
 
 from src.container import Container
-from src.core.settings import USER_CREATION_QUEUE_NAME, postgres_settings, rabbitmq_settings, redis_settings
+from src.core.settings import (
+    USER_CREATION_QUEUE_NAME,
+    postgres_settings,
+    rabbitmq_settings,
+    redis_settings,
+)
 from src.api.v1.auth import auth_router
 
 

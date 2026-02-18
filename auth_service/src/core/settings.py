@@ -4,7 +4,6 @@ from pathlib import Path
 from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator
 
-
 BASE_DIR = Path(__file__).parent.parent
 
 # class ModelConfigMixin:

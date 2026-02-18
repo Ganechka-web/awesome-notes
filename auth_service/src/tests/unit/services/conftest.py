@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING, Generator, Callable, Any
-from datetime import datetime
 from unittest import mock
 
 import jwt
