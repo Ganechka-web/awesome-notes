@@ -1,5 +1,5 @@
 class ServiceError(Exception):
-    def __init__(self, msg: str,*args):
+    def __init__(self, msg: str, *args):
         self.msg = msg
         super().__init__(msg, *args)
 

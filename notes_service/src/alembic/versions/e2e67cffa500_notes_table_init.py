@@ -11,7 +11,6 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
 revision: str = "e2e67cffa500"
 down_revision: Union[str, None] = None
@@ -42,9 +41,7 @@ def upgrade() -> None:
         sa.Column("owner_id", sa.UUID(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        op.f("ix_notes_owner_id"), "notes", ["owner_id"], unique=False
-    )
+    op.create_index(op.f("ix_notes_owner_id"), "notes", ["owner_id"], unique=False)
     # ### end Alembic commands ###
 
 

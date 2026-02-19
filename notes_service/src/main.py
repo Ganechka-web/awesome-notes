@@ -4,7 +4,11 @@ import uvicorn
 from fastapi import FastAPI
 
 from src.api.endpoints.note import notes_router
-from src.core.settings import postgres_settings, rabbitmq_settings, DELETE_NOTES_QUEUE_NAME
+from src.core.settings import (
+    postgres_settings,
+    rabbitmq_settings,
+    DELETE_NOTES_QUEUE_NAME,
+)
 from src.container import Container
 
 

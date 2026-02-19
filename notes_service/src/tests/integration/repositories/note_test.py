@@ -139,17 +139,21 @@ class TestNoteRepository:
         assert updated_note.content == content or exp_note_attrs[0]["content"]
         assert updated_note.owner_id == owner_id or exp_note_attrs[0]["owner_id"]
 
-    async def test_delete_one(self, expected_data_with, insert_test_data, note_repository: "NoteRepository"):
+    async def test_delete_one(
+        self, expected_data_with, insert_test_data, note_repository: "NoteRepository"
+    ):
         exp_note_id = uuid.uuid4()
         exp_note_orm, _ = expected_data_with(id=exp_note_id, amount=1)
         await insert_test_data(exp_note_orm)
 
         await note_repository.delete_one(note=exp_note_orm[0])
-        
+
         with pytest.raises(NoSuchRowError):
             _ = await note_repository.get_one_by_id(note_id=exp_note_id)
 
-    async def test_delete_all(self, expected_data_with, insert_test_data, note_repository: "NoteRepository"):
+    async def test_delete_all(
+        self, expected_data_with, insert_test_data, note_repository: "NoteRepository"
+    ):
         exp_note_owner_id = uuid.uuid4()
         exp_notes_orm, _ = expected_data_with(owner_id=exp_note_owner_id, amount=3)
         exp_notes_orm_ids = [note.id for note in exp_notes_orm]
