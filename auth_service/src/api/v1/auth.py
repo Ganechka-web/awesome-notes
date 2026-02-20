@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 auth_router = APIRouter()
 
 
-@auth_router.get("/{login}")
+@auth_router.get("/credentials/{login}")
 @inject
 async def get_one_by_login(
     login: Annotated[str, Path()],
@@ -44,7 +44,7 @@ async def get_one_by_login(
     return credentials
 
 
-@auth_router.post("/register/", status_code=status.HTTP_201_CREATED)
+@auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 @inject
 async def register(
     credentials: AuthCredentialsRegisterSchema,
@@ -72,7 +72,7 @@ async def register(
     return new_credentials_id
 
 
-@auth_router.post("/login/")
+@auth_router.post("/login")
 @inject
 async def login(
     response: Response,
@@ -94,7 +94,7 @@ async def login(
     return access_token
 
 
-@auth_router.get("/verify-token/")
+@auth_router.get("/internal/verify-token")
 @inject
 async def verify_token(
     response: Response,
