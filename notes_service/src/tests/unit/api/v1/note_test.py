@@ -278,9 +278,7 @@ def test_delete_all_by_owner_id(mock_note_service, client):
     owner_id = uuid.uuid4()
     mock_note_service.delete_all_by_owner_id = mock.AsyncMock(return_value=None)
 
-
-    response = client.delete(f"/note/delete/by-owner-id/{owner_id.hex}") 
+    response = client.delete(f"/note/delete/by-owner-id/{owner_id.hex}")
 
     assert response.status_code == 204
     mock_note_service.delete_all_by_owner_id.assert_awaited_once_with(owner_id=owner_id)
-

@@ -2,7 +2,6 @@ from sys import stdout
 
 from loguru import logger
 
-
 logger.remove()
 logger.add(
     stdout,

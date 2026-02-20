@@ -1,7 +1,9 @@
 from src.exceptions.base import AuthServiceException
 
+
 class RepositoryError(AuthServiceException):
-    pass 
+    pass
+
 
 class DataBaseError(RepositoryError):
     pass

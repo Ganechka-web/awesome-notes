@@ -25,7 +25,7 @@ def expected_notes_sch_with() -> Callable:
     NoteOutputSchemas fabric, allow create one or more ones with custom attributes
 
     Returns:
-        list[NoteOutputShema] | NoteOutputShema 
+        list[NoteOutputShema] | NoteOutputShema
         One NoteOutputSchema or list of NoteOutputSchemas according to amount
     """
 

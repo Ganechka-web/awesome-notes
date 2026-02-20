@@ -22,6 +22,7 @@ A REST API for writing notes in Markdown format with user management and JWT-bas
 - CI/CD via GitHub Actions
 - Onion-like structure in each microservice
 - Fully automated and optimized project startup via docker-compose
+- Secure Nginx via headers, CSP and rate limiting
  
 
 ## Tech stack  :wrench:

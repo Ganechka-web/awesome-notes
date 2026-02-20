@@ -18,6 +18,7 @@ def mock_user_repository(container) -> Generator[mock.AsyncMock, None, None]:
     yield container.user_repository()
     container.user_repository.reset_override()
 
+
 @pytest.fixture
 def mock_user_broker(container) -> Generator[mock.AsyncMock, None, None]:
     container.user_broker.override(mock.AsyncMock())
@@ -37,7 +38,7 @@ def expected_users_orm_with() -> Callable:
 
     Returns:
         User | list[User]
-        By default returns single instance but 
+        By default returns single instance but
         if amount isn`t equal 1, returns list according to amount
     """
 

@@ -9,4 +9,3 @@ class SecurityPasswordService:
 
     def verify_password_hash(self, bare_password: str, password_hash: str) -> bool:
         return self.context.verify(bare_password, password_hash)
-    

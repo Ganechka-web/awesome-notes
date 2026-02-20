@@ -86,9 +86,11 @@ class UserRepository:
                                 clause
                                 for clause in (
                                     (self.model.id == id) if id else None,
-                                    (self.model.username == username)
-                                    if username
-                                    else None,
+                                    (
+                                        (self.model.username == username)
+                                        if username
+                                        else None
+                                    ),
                                 )
                                 if clause is not None
                             ],

@@ -31,8 +31,10 @@ async def test_delete_all_user_notes(
     # waiting for consuming handler call processed
     await asyncio.sleep(4)
 
-    mock_note_service.delete_all_by_owner_id.assert_awaited_once_with(owner_id=user_id.hex)
-    
+    mock_note_service.delete_all_by_owner_id.assert_awaited_once_with(
+        owner_id=user_id.hex
+    )
+
 
 @pytest.mark.asyncio
 async def test_delete_all_user_notes_unreachable_broker(

@@ -10,21 +10,20 @@ class UserEventSchema(BaseModel):
 
     class Config:
         from_attributes = True
-    
-    @field_validator('gender')
+
+    @field_validator("gender")
     @classmethod
     def validate_user_gender(cls, gender: str) -> str:
-        genders = ('male', 'female', 
-                   'unknown')
+        genders = ("male", "female", "unknown")
         if gender not in genders:
-            raise ValueError(f'Gender can be only {', '.join(genders)}')
+            raise ValueError(f"Gender can be only {', '.join(genders)}")
         return gender
-    
+
 
 class UserEventCreateSchema(UserEventSchema):
     id: UUID
 
-    @field_serializer('id')
+    @field_serializer("id")
     def serialize_id(self, id: UUID, _info) -> str:
         return str(id)
 
@@ -41,7 +40,7 @@ class AuthCredentialsRegisterSchema(BaseModel):
 class AuthCredentialsLoginSchema(BaseModel):
     login: str = Field(max_length=20)
     password: str
-    
+
     class Config:
         from_attributes = True
 

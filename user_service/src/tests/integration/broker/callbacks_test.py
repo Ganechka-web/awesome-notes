@@ -76,7 +76,7 @@ async def test_create_user_callback_already_exists(
     )
 
     error_from_user_service = UserServiceCreationErrorSchema.model_validate(
-       json.loads(reply_from_rpc_client["error"])
+        json.loads(reply_from_rpc_client["error"])
     )
     assert error_from_user_service.message == user_service_error_message
     assert error_from_user_service.service_name == "user_service"

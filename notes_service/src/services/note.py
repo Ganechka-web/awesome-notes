@@ -80,7 +80,7 @@ class NoteService:
             )
         )
         await note_title_unique_for_owner_validator.validate(
-            new_note_title=new_note.title   
+            new_note_title=new_note.title
         )
 
         new_note_id = await self.repository.create_one(note=new_note_orm)

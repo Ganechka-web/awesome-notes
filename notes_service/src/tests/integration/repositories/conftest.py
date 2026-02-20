@@ -118,6 +118,7 @@ def expected_data_with() -> Callable:
 @pytest.fixture
 def insert_test_data(prepare_test_database) -> Callable:
     """Inserts test data to the test database"""
+
     async def wrapper(data: list[Note]) -> None:
         async with prepare_test_database.get_session() as session:
             session.add_all(data)

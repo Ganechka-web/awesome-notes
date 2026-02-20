@@ -247,7 +247,7 @@ class TestRedisTokenRepository:
 
         is_exists = await redis_token_repository.is_token_exists(key)
         assert not is_exists
-        
+
     @pytest.mark.asyncio
     async def test_delete_token_unexists(
         self,
@@ -259,4 +259,3 @@ class TestRedisTokenRepository:
 
         is_exists = await redis_token_repository.is_token_exists(key)
         assert not is_exists
-

@@ -116,15 +116,17 @@ class TestRPCClient:
 
         current_reply_future = asyncio.Future()
         self._replies[properties["correlation_id"]] = current_reply_future
-        
+
         return await asyncio.wait_for(current_reply_future, timeout=3)
 
 
 @pytest_asyncio.fixture
 async def call_rpc_client(user_broker) -> Callable:
     """Creates RPC client instance, calls it and return result"""
+
     async def inner(queue_name: str, data: bytes) -> bytes:
         rpc_client = TestRPCClient(broker=user_broker)
         reply = await rpc_client.call(queue_name=queue_name, data=data)
         return reply
+
     return inner

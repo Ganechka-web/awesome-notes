@@ -1,4 +1,12 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+)
 from sqlalchemy import URL
 from sqlalchemy.orm import DeclarativeBase
 
@@ -19,18 +27,38 @@ class AsyncDatabase:
             password=password,
             database=db,
         )
-        self.async_engine: AsyncEngine = create_async_engine(self.postgres_dcn, echo=True)
-        self.session: AsyncSession | None = None
+        self.async_engine: AsyncEngine = create_async_engine(
+            self.postgres_dcn, echo=True
+        )
+        self.session_factory = async_sessionmaker(
+            bind=self.async_engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            close_resets_only=False,
+        )
         logger.info("Database is connected and ready to execute queries")
 
-    def get_session(self) -> AsyncSession:
-        if self.session is None:
-            self.session = AsyncSession(bind=self.async_engine)
-        return self.session
+    @asynccontextmanager
+    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
+        """Context manager, creates and yields new db session and then closes it"""
+        session = self.session_factory()
+        try:
+            logger.info("Database session created")
+            yield session
+        except Exception:
+            await session.rollback()
+            logger.exception(
+                "There is an unexpected exception during working with session"
+            )
+            raise
+        finally:
+            await session.close()
+            logger.info("Database session has closed")
 
     async def shutdown(self) -> None:
-        if self.session:
-            await self.session.aclose()
+        if self.async_engine:
+            await self.async_engine.dispose()
         logger.info("Database has shut down successfully ...")
 
 

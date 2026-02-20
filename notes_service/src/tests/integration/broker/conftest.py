@@ -50,11 +50,9 @@ async def note_broker(
 
 
 @pytest_asyncio.fixture(scope="function")
-async def unrteachable_broker(container) -> AsyncGenerator["AsyncBroker", None]: 
+async def unrteachable_broker(container) -> AsyncGenerator["AsyncBroker", None]:
     """Sets unexists host to broker config and reset it"""
-    container.config.set(
-        "rabbitmq_settings.host", "unreachable"
-    )
+    container.config.set("rabbitmq_settings.host", "unreachable")
     container.reset_singletons()
     broker = container.note_broker()
     yield broker
@@ -77,6 +75,7 @@ def delete_all_user_notes_callback(container) -> "DeleteAllUserNotesCallback":
 @pytest_asyncio.fixture
 async def publish_message_in_delete_notes_queue(note_broker) -> Callable:
     """Publishes message in DELETE_NOTES_QUEUE with user_id as a data"""
+
     async def wrapper(user_id: uuid.UUID) -> None:
         await note_broker.publish(
             data=json.dumps({"user_id": user_id.hex}).encode(encoding="utf-8"),

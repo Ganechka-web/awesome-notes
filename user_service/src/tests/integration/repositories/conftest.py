@@ -32,7 +32,8 @@ def postgres_container(container) -> Generator[PostgresContainer, None, None]:
     postgres_cont.start()
 
     container.config.set(
-        "postgres_settings.host", postgres_cont.get_container_host_ip(),
+        "postgres_settings.host",
+        postgres_cont.get_container_host_ip(),
     )
     container.config.set(
         "postgres_settings.port",

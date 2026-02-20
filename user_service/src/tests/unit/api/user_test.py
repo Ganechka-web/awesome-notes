@@ -268,9 +268,13 @@ def test_delete_one_success(mock_user_service: mock.AsyncMock, client: TestClien
     mock_user_service.delete_one.assert_awaited_once_with(id=user_on_delete_id)
 
 
-def test_delete_one_broker_unreachable(mock_user_service: mock.AsyncMock, client: TestClient):
+def test_delete_one_broker_unreachable(
+    mock_user_service: mock.AsyncMock, client: TestClient
+):
     user_on_delete_id = uuid.uuid4()
-    mock_user_service.delete_one = mock.AsyncMock(side_effect=[UnableToConnectToBrokerError("...")])
+    mock_user_service.delete_one = mock.AsyncMock(
+        side_effect=[UnableToConnectToBrokerError("...")]
+    )
 
     response = client.delete(f"/user/delete/{user_on_delete_id}")
 
@@ -280,10 +284,11 @@ def test_delete_one_broker_unreachable(mock_user_service: mock.AsyncMock, client
 
 def test_delete_one_unexists(mock_user_service: mock.AsyncMock, client: TestClient):
     user_on_delete_id = uuid.uuid4()
-    mock_user_service.delete_one = mock.AsyncMock(side_effect=[UserNotFoundError("...")])
+    mock_user_service.delete_one = mock.AsyncMock(
+        side_effect=[UserNotFoundError("...")]
+    )
 
     response = client.delete(f"/user/delete/{user_on_delete_id}")
 
     assert response.status_code == 404
     mock_user_service.delete_one.assert_awaited_once_with(id=user_on_delete_id)
-

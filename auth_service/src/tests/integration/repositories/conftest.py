@@ -1,5 +1,4 @@
 import uuid
-import os
 from typing import TYPE_CHECKING, AsyncGenerator, Callable, Generator, Any
 
 import jwt
@@ -9,7 +8,7 @@ from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
 from src.models.auth import AuthCredentials
-from src.core.settings import postgres_settings, redis_settings, SECRET_KEY, ALGORITHM
+from src.core.settings import postgres_settings, SECRET_KEY, ALGORITHM
 from src.core.database import Base
 
 if TYPE_CHECKING:
@@ -126,12 +125,10 @@ def insert_test_data(prepare_test_database) -> Callable:
 
 @pytest.fixture(scope="session", autouse=True)
 def redis_container(container) -> Generator[RedisContainer, None, None]:
-    redis_cont = RedisContainer(
-        image="redis:8-alpine", port=6379
-    )
+    redis_cont = RedisContainer(image="redis:8-alpine", port=6379)
     redis_cont.start()
 
-    # setting up custom redis env configuration 
+    # setting up custom redis env configuration
     container.config.set("redis_settings.host", redis_cont.get_container_host_ip())
     container.config.set("redis_settings.port", redis_cont.get_exposed_port(6379))
     container.config.set("redis_settings.user", "default")

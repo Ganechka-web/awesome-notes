@@ -40,9 +40,9 @@ class CreateUserCallback:
                 message=Message(
                     body=json.dumps(
                         {
-                            "created_user_id": new_user_id.hex
-                            if new_user_id
-                            else new_user_id,
+                            "created_user_id": (
+                                new_user_id.hex if new_user_id else new_user_id
+                            ),
                             "error": error.model_dump_json() if error else None,
                         }
                     ).encode(encoding="utf-8"),
