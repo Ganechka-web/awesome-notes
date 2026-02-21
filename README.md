@@ -39,6 +39,9 @@ A REST API for writing notes in Markdown format with user management and JWT-bas
 
 ![Pytest](https://img.shields.io/badge/pytest-%23ffffff.svg?style=for-the-badge&logo=pytest&logoColor=2f9fe3) [![Testcontainers Python](https://img.shields.io/badge/Testcontainers_Python-5562FF?style=for-the-badge&logo=python&logoColor=white)](https://testcontainers.com/)
 
+- Other tools
+
+![uv](https://img.shields.io/badge/uv-6B4FFF?style=for-the-badge&logo=uv&logoColor=white) ![Black](https://img.shields.io/badge/Black-000000?style=for-the-badge&logo=python&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-E45C38?style=for-the-badge&logo=ruff&logoColor=white)
 
 ## Project architecture :triangular_ruler:
 
