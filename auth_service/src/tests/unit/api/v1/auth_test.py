@@ -33,7 +33,7 @@ async def test_get_one_by_login(
         side_effect=raised_exception or [credentials]
     )
 
-    response = client.get(f"/auth/{login}")
+    response = client.get(f"/auth/credentials/{login}")
 
     mock_auth_service.get_one_by_login.assert_awaited_once_with(login=login)
     assert response.status_code == status_code
@@ -161,7 +161,7 @@ async def test_register(
         side_effect=raised_exception or [created_credentials_id]
     )
 
-    response = client.post("auth/register/", json=register_data)
+    response = client.post("auth/register", json=register_data)
 
     assert response.status_code == status_code
 
@@ -215,7 +215,7 @@ async def test_login(
         side_effect=raised_exception or [access_token]
     )
 
-    response = client.post("/auth/login/", json=credentials_login_schema.model_dump())
+    response = client.post("/auth/login", json=credentials_login_schema.model_dump())
 
     assert response.status_code == status_code
 
@@ -233,7 +233,7 @@ async def test_verify_token(mock_auth_service: mock.AsyncMock, client: TestClien
     access_token = "cunewiocw478n_2-dkjjdlsjkclskd"
     mock_auth_service.check_accessability = mock.AsyncMock(return_value=access_token)
 
-    response = client.get("/auth/verify-token/", cookies={"access_token": access_token})
+    response = client.get("/auth/internal/verify-token", cookies={"access_token": access_token})
 
     assert response.status_code == 200
     assert response.cookies.get("access_token") == access_token
@@ -251,7 +251,7 @@ async def test_verify_token_invalid_token(
         side_effect=InvalidTokenError("...")
     )
 
-    response = client.get("/auth/verify-token/", cookies={"access_token": access_token})
+    response = client.get("/auth/internal/verify-token", cookies={"access_token": access_token})
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Token is invalid, log-in again"}
