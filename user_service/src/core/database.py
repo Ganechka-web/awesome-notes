@@ -53,7 +53,7 @@ class AsyncDatabase:
         finally:
             await session.close()
             logger.info("Database session has closed")
-                  
+
     async def shutdown(self) -> None:
         if self.async_engine:
             await self.async_engine.dispose()
