@@ -13,9 +13,10 @@ from src.exceptions.integration import UserCreationException
 from src.exceptions.services import (
     AuthCredentialsAlreadyExistsError,
     AuthCredentialsNotFoundError,
+    UnableToCreareAuthCredentials,
     PasswordsDidNotMatch,
     InvalidTokenError,
-    UnableToCreareAuthCredentials,
+    TokenExpiredError,
 )
 from src.container import Container
 from src.logger import logger
@@ -107,7 +108,7 @@ async def verify_token(
     if access_token:
         try:
             access_token = await auth_service.check_accessability(access_token)
-        except InvalidTokenError:
+        except (InvalidTokenError, TokenExpiredError):
             raise HTTPException(
                 status.HTTP_401_UNAUTHORIZED, detail="Token is invalid, log-in again"
             )
