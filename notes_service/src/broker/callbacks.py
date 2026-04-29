@@ -23,6 +23,7 @@ class DeleteAllUserNotesCallback(BaseCallback):
         self.note_service = note_service
 
     async def handle(self, message: AbstractIncomingMessage) -> None:
+        """Receives user_id from `message` and call `delete_all_by_owner_id` note_service`s method"""
         logger.info("Received messege on delete user`s notes")
         user_id = json.loads(message.body)["user_id"]
 
