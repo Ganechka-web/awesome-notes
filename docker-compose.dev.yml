@@ -4,6 +4,8 @@ services:
     container_name: auth_service_http
     expose:
       - "8002"
+    ports:
+      - "8002:8002"
     environment:
       - POSTGRES_HOST=${DEV_AUTH_POSTGRES_HOST}
       - POSTGRES_PORT=${DEV_AUTH_POSTGRES_PORT}
@@ -24,6 +26,8 @@ services:
 
       - ALGORITHM=${DEV_AUTH_ALGORITHM}
       - SECRET_KEY=${DEV_AUTH_SECRET_KEY}
+    labels:
+      - monitoring=enabled
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
@@ -34,12 +38,14 @@ services:
         condition: service_started
     networks:
       - awesome-notes-network
-  
+
   user-service-http:
     build: ./user_service
     container_name: user_service_http
     expose: 
       - "8001"
+    ports:
+      - "8001:8001"
     environment:
       - POSTGRES_HOST=${DEV_USER_POSTGRES_HOST}
       - POSTGRES_PORT=${DEV_USER_POSTGRES_PORT}
@@ -51,7 +57,8 @@ services:
       - RABBITMQ_PORT=${DEV_RABBITMQ_PORT}
       - RABBITMQ_USER=${DEV_RABBITMQ_USER}
       - RABBITMQ_PASSWORD=${DEV_RABBITMQ_PASSWORD}
-    restart: always
+    labels:
+      - monitoring=enabled
     depends_on:
       awesome-notes-rabbitmq:
         condition: service_healthy
@@ -59,12 +66,15 @@ services:
         condition: service_started
     networks:
       - awesome-notes-network
+    restart: always
   
   notes-service-http:
     build: ./notes_service
     container_name: notes_service_http
     expose:
       - "8003"
+    ports:
+      - "8003:8003"
     environment:
       - POSTGRES_HOST=${DEV_NOTES_POSTGRES_HOST}
       - POSTGRES_PORT=${DEV_NOTES_POSTGRES_PORT}
@@ -76,6 +86,8 @@ services:
       - RABBITMQ_PORT=${DEV_RABBITMQ_PORT}
       - RABBITMQ_USER=${DEV_RABBITMQ_USER}
       - RABBITMQ_PASSWORD=${DEV_RABBITMQ_PASSWORD}
+    labels:
+      - monitoring=enabled
     restart: always
     depends_on:
       awesome-notes-rabbitmq:
@@ -168,13 +180,13 @@ services:
           echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
           echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
           echo "user $DEV_REDIS_USER on >$DEV_REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
-          redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+          exec redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
       '
     volumes: 
       - awesome-notes-redis:/data
     restart: on-failure 
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$DEV_REDIS_PASSWORD redis-cli ping"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -196,6 +208,73 @@ services:
       - "443:443"
     networks:
       - awesome-notes-network
+  
+  prometheus:
+    image: prom/prometheus:v3
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - awesome-notes-network
+
+  alloy:
+    image: grafana/alloy:v1.15.1
+    container_name: alloy
+    command: 
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - awesome_notes_alloy_data:/var/lib/alloy/data
+      - ./monitoring/config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: 
+      - awesome-notes-network
+    depends_on:
+      loki:
+        condition: service_healthy
+  
+  loki:
+    image: grafana/loki:3.6.10
+    container_name: loki
+    command: -config.file=/etc/loki/config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - awesome_notes_loki_data:/loki:rw
+      - ./monitoring/loki-config.yml:/etc/loki/config.yml
+    healthcheck:
+      test: [ "CMD", "/usr/bin/loki", "-health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks: 
+      - awesome-notes-network
+
+  grafana: 
+    image: grafana/grafana:13.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - awesome_notes_grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/:/etc/grafana/provisioning/:ro
+    restart: unless-stopped
+    networks:
+      - awesome-notes-network
+    depends_on:
+      loki:
+        condition: service_healthy
+      alloy:
+        condition: service_started
+    
 
 volumes:
   user_async_service_postgres_data:
@@ -203,6 +282,9 @@ volumes:
   auth_async_service_postgres_data:
   awesome-notes_rabbitmq_data:
   awesome-notes-redis:
+  awesome_notes_alloy_data:
+  awesome_notes_loki_data:
+  awesome_notes_grafana_data:
 
 networks:
   awesome-notes-network:
