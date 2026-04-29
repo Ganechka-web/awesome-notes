@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 import uvicorn
+
 from fastapi import FastAPI
+from asgi_correlation_id import CorrelationIdMiddleware
 
 from src.container import Container
 from src.core.settings import (
@@ -10,14 +12,21 @@ from src.core.settings import (
     redis_settings,
 )
 from src.api.v1.auth import auth_router
+from src.middlewares import log_request_middleware
+from src.monitoring import instrumentator
+from src.logger import configure_logging, logger
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
     yield
+    # shutting down broker, database and redis
     await app.container.auth_broker().shutdown()
     await app.container.auth_database().shutdown()
     await app.container.auth_redis().shutdown()
+
+    await logger.complete()
 
 
 def create_app() -> FastAPI:
@@ -30,13 +39,28 @@ def create_app() -> FastAPI:
             "queue_names": {"user_creation_queue_name": USER_CREATION_QUEUE_NAME},
         }
     )
-    app = FastAPI(lifespan=lifespan, root_path="/auth")
+    app = FastAPI(
+        title="Auth service",
+        version="0.0.0 alpha",
+        lifespan=lifespan,
+        root_path="/auth",
+    )
     app.container = dep_container
+
+    # setting up Prometheus metrics
+    instrumentator.instrument(app).expose(app)
+
     return app
 
 
 app = create_app()
+
+app.middleware("http")(log_request_middleware)
+app.add_middleware(CorrelationIdMiddleware)
+
 app.include_router(auth_router)
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8002, reload=True)
+    uvicorn.run(
+        "src.main:app", host="0.0.0.0", port=8002, reload=True, access_log=False
+    )
