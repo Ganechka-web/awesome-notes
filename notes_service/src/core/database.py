@@ -28,14 +28,18 @@ class AsyncDatabase:
             database=db,
         )
         self.async_engine: AsyncEngine = create_async_engine(
-            self.postgres_dcn, echo=True
+            self.postgres_dcn,
+            pool_size=20,
+            max_overflow=10,
+            pool_pre_ping=True,
+            pool_recycle=1800,
+            pool_timeout=5,
+            echo=False,
         )
         self.session_factory = async_sessionmaker(
             bind=self.async_engine,
             class_=AsyncSession,
             expire_on_commit=False,
-            autocommit=False,
-            close_resets_only=False,
         )
         logger.info("Database is connected and ready to execute queries")
 
@@ -46,17 +50,12 @@ class AsyncDatabase:
         try:
             logger.info("Database session created")
             yield session
-        except Exception:
-            await session.rollback()
-            logger.exception(
-                "There is an unexpected exception during working with session"
-            )
-            raise
         finally:
             await session.close()
             logger.info("Database session has closed")
 
     async def shutdown(self) -> None:
+        """Gracefull database shutdown"""
         if self.async_engine:
             await self.async_engine.dispose()
         logger.info("Database has shut down successfully ...")
