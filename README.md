@@ -23,18 +23,22 @@ A REST API for writing notes in Markdown format with user management and JWT-bas
 - Onion-like structure in each microservice
 - Fully automated and optimized project startup via docker-compose
 - Secure Nginx via headers, CSP and rate limiting
+- Fully configured monitoring and logging stack via Grafana, Loki, Alloy and Prometheus
  
 
 ## Tech stack  :wrench:
 - languages and frameworks:
 
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/) ![SQLAlchemy](https://img.shields.io/badge/sqlalchemy-%23D71F00.svg?style=for-the-badge&logo=sqlalchemy&logoColor=white) [![PyPI](https://img.shields.io/pypi/v/dependency-injector?style=for-the-badge&label=Dependency%20Injector&color=blue)](https://pypi.org/project/dependency-injector/)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Bash](https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white) [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/) ![SQLAlchemy](https://img.shields.io/badge/sqlalchemy-%23D71F00.svg?style=for-the-badge&logo=sqlalchemy&logoColor=white) ![Alembic](https://img.shields.io/badge/Alembic-000000?style=for-the-badge&logo=sqlalchemy&logoColor=white) [![PyPI](https://img.shields.io/pypi/v/dependency-injector?style=for-the-badge&label=Dependency%20Injector&color=blue)](https://pypi.org/project/dependency-injector/) 
+
 - Data storages:
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white) 
+
 - infrastructure:
 
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/) ![RabbitMQ](https://img.shields.io/badge/Rabbitmq-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white) ![Nginx](https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white)
+
 - Testing:
 
 ![Pytest](https://img.shields.io/badge/pytest-%23ffffff.svg?style=for-the-badge&logo=pytest&logoColor=2f9fe3) [![Testcontainers Python](https://img.shields.io/badge/Testcontainers_Python-5562FF?style=for-the-badge&logo=python&logoColor=white)](https://testcontainers.com/)
@@ -42,6 +46,10 @@ A REST API for writing notes in Markdown format with user management and JWT-bas
 - Other tools
 
 ![uv](https://img.shields.io/badge/uv-6B4FFF?style=for-the-badge&logo=uv&logoColor=white) ![Black](https://img.shields.io/badge/Black-000000?style=for-the-badge&logo=python&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-E45C38?style=for-the-badge&logo=ruff&logoColor=white)
+
+- Monitoring 
+
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white) ![Grafana Alloy](https://img.shields.io/badge/Grafana%20Alloy-FF7A00?style=for-the-badge&logo=grafana&logoColor=white) ![Loki](https://img.shields.io/badge/Loki-4A154B?style=for-the-badge&logo=loki&logoColor=white) ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white) ![Prometheus FastAPI Instrumentator](https://img.shields.io/badge/Prometheus_FastAPI_Instrumentator-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 
 ## Project architecture :triangular_ruler:
 
@@ -103,7 +111,7 @@ docker compose -f docker-compose.dev.yml --env-file config/development.env up --
 - `http://localhost:8000/user/docs`: for user service api docs
 - `http://localhost:8000/note/docs`: for notes service api docs
 
-5. Or if you want to use canonical project version add this to your hosts file:
+5. Or if you want to use the canonical project version add this to your hosts file:
   
 - :penguin: On Linux edit `/etc/hosts` **as root**
 

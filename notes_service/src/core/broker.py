@@ -39,6 +39,7 @@ class AsyncBroker:
     async def consume(
         self, queue_name: str, callback: "BaseCallback", **queue_kwargs
     ) -> None:
+        """Starts consuming messages from `queue_name` with `queue_args`"""
         if self._connection is None:
             await self._create_amqp_connection()
         if self._channel is None:
@@ -52,6 +53,7 @@ class AsyncBroker:
         await queue.consume(callback.handle)
 
     async def publish(self, queue_name: str, data: bytes, **queue_kwargs) -> None:
+        """Publishes message with `data` to `queue_name` queue with `queue_args`"""
         if self._connection is None:
             await self._create_amqp_connection()
         if self._channel is None:
@@ -63,6 +65,7 @@ class AsyncBroker:
         )
 
     async def shutdown(self) -> None:
+        """Gracefull broker shutdown"""
         if self._channel and not self._channel.is_closed:
             await self._channel.close()
         if self._connection and not self._connection.is_closed:

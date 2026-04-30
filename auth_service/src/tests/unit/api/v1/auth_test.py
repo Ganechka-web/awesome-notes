@@ -10,6 +10,7 @@ from src.exceptions.services import (
     AuthCredentialsNotFoundError,
     PasswordsDidNotMatch,
     InvalidTokenError,
+    TokenExpiredError,
 )
 
 
@@ -233,7 +234,9 @@ async def test_verify_token(mock_auth_service: mock.AsyncMock, client: TestClien
     access_token = "cunewiocw478n_2-dkjjdlsjkclskd"
     mock_auth_service.check_accessability = mock.AsyncMock(return_value=access_token)
 
-    response = client.get("/auth/internal/verify-token", cookies={"access_token": access_token})
+    response = client.get(
+        "/auth/internal/verify-token", cookies={"access_token": access_token}
+    )
 
     assert response.status_code == 200
     assert response.cookies.get("access_token") == access_token
@@ -251,7 +254,28 @@ async def test_verify_token_invalid_token(
         side_effect=InvalidTokenError("...")
     )
 
-    response = client.get("/auth/internal/verify-token", cookies={"access_token": access_token})
+    response = client.get(
+        "/auth/internal/verify-token", cookies={"access_token": access_token}
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Token is invalid, log-in again"}
+
+    mock_auth_service.check_accessability.assert_awaited_once_with(access_token)
+
+
+@pytest.mark.asyncio
+async def test_verify_token_expired(
+    mock_auth_service: mock.AsyncMock, client: TestClient
+):
+    access_token = "cunewiocw478n_@2=-dkjjdlsjkclskd"
+    mock_auth_service.check_accessability = mock.AsyncMock(
+        side_effect=TokenExpiredError("...")
+    )
+
+    response = client.get(
+        "/auth/internal/verify-token", cookies={"access_token": access_token}
+    )
 
     assert response.status_code == 401
     assert response.json() == {"detail": "Token is invalid, log-in again"}
